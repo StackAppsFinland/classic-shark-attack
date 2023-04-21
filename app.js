@@ -2,6 +2,7 @@ import ImageLoader from './imageLoader.js';
 import Score from './score.js';
 import levels from './levels.js';
 import Shark from "./shark.js";
+import WaterSplashEffect from "./waterSplashEffect.js";
 
 WebFont.load({
     custom: {
@@ -90,10 +91,49 @@ function sharkAttack(imageLoader) {
 
         for (const shark of sharks) {
             shark.update();
+
+            if (checkCollision(player, shark.sharkSprite)) {
+                if (waterSplashContainer.children.length == 0) {
+                    const waterSplashEffect = new WaterSplashEffect(player.x, player.y, 3000, 600, 1.0);
+                    waterSplashContainer.addChild(waterSplashEffect.container);
+                }
+            }
         }
+
+        updateSpecialEffects();
 
         requestAnimationFrame(gameLoop);
     }
+
+    function updateSpecialEffects() {
+        for (let i = netEatenContainer.children.length - 1; i >= 0; i--) {
+            const effect = netEatenContainer.children[i].instance;
+            effect.update();
+
+            if (effect.isFinished) {
+                netEatenContainer.removeChild(effect);
+            }
+        }
+
+        for (let i = waterSplashContainer.children.length - 1; i >= 0; i--) {
+            const effect = waterSplashContainer.children[i].instance;
+            effect.update();
+
+            if (effect.isFinished) {
+                waterSplashContainer.removeChild(effect);
+            }
+        }
+    }
+
+    function checkCollision(player, shark) {
+        const dx = player.x - shark.x;
+        const dy = player.y - shark.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const minDistance = (player.width / 2) + (shark.width / 2);
+
+        return distance < minDistance;
+    }
+
 
     function getCurrentLevel() {
         let gameLevel = levels.find(level => level.id === currentScore.level);
@@ -121,18 +161,21 @@ function sharkAttack(imageLoader) {
     const player = createPlayer(0, 0);
 
     const netContainer = new PIXI.Container();
+    const netEatenContainer = new PIXI.Container();
     const playerContainer = new PIXI.Container();
     const sharkContainer = new PIXI.Container();
+    const waterSplashContainer = new PIXI.Container();
     playerContainer.addChild(player)
     app.stage.addChild(netContainer);
+    app.stage.addChild(netEatenContainer);
     app.stage.addChild(playerContainer);
     app.stage.addChild(sharkContainer);
+    app.stage.addChild(waterSplashContainer);
 
-
-    let speed = 0.9;
-    for (let i = 0; i < 8; i++) {
-        const shark = new Shark(netGrid, imageLoader, player, gridCountX, gridCountY, speed);
-        speed += 0.1;
+    let speed = 0.5;
+    for (let i = 0; i < 10; i++) {
+        const shark = new Shark(netGrid, netEatenContainer, imageLoader, player, gridCountX, gridCountY, speed);
+        speed += 0.05;
         sharkContainer.addChild(shark.sharkSprite);
         sharks.push(shark);
     }
