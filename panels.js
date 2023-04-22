@@ -130,7 +130,7 @@ class Panels {
             dropShadowColor: 0x000000,
             dropShadowDistance: 3,
         });
-        const titleText = new PIXI.Text('- CITY BOMBER -', crashStyle);
+        const titleText = new PIXI.Text('- SHARK ATTACK -', crashStyle);
         titleText.anchor.set(0.5);
         titleText.x = this.canvasWidth / 2;
         titleText.y = 250;

@@ -17,14 +17,14 @@ class Score {
     }
 
     saveGameData() {
-        localStorage.setItem(Const.GAME_NAME + '.currentLevel', this.level);
-        localStorage.setItem(Const.GAME_NAME + '.highScore', this.highScore);
+        localStorage.setItem('shark.attack.currentLevel', this.level);
+        localStorage.setItem('shark.attack.highScore', this.highScore);
         console.log("Saved level: " + this.level)
     }
 
     loadGameData() {
-        const currentLevel = localStorage.getItem(Const.GAME_NAME + '.currentLevel') || 0;
-        const highScore = localStorage.getItem(Const.GAME_NAME + '.highScore') || 0;
+        const currentLevel = localStorage.getItem('shark.attack.currentLevel') || 0;
+        const highScore = localStorage.getItem('shark.attack.highScore') || 0;
 
         this.level = parseInt(currentLevel);
         this.highScore = parseInt(highScore);

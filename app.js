@@ -1,8 +1,10 @@
 import ImageLoader from './imageLoader.js';
+import Panels from './panels.js';
 import Score from './score.js';
 import levels from './levels.js';
 import Shark from "./shark.js";
 import WaterSplashEffect from "./waterSplashEffect.js";
+import ProgressBar from "./progressBar.js";
 
 WebFont.load({
     custom: {
@@ -27,24 +29,20 @@ function sharkAttack(imageLoader) {
     const gridSize = 28;
     const gridCountX = 30;
     const gridCountY = 22;
-    const images = imageLoader;
     const currentScore = new Score();
-    let specialEffects = [];
+    let gameMode = 0;
     let testModeCounter = 0;
     let playerSpeed = 1.35;
-    let isGameReady = true;
     let isPaused = false;
     const blockSize = 20;
-
     const netGrid = new Array(gridCountX).fill(null).map(() => new Array(gridCountY).fill(null));
-
     const keysPressed = {
         a: false,
         z: false,
         ',': false,
         '.': false,
     };
-
+    const autoPause = false;
 
 // Create a PixiJS Application
     const app = new PIXI.Application({
@@ -55,7 +53,8 @@ function sharkAttack(imageLoader) {
 
     gsap.registerPlugin(PixiPlugin);
 
-    //currentScore.loadGameData();
+    currentScore.loadGameData();
+    const currentLevel = getCurrentLevel();
     handleInput()
 // Add after app created
     const canvasWidth = app.screen.width;
@@ -72,6 +71,8 @@ function sharkAttack(imageLoader) {
     // Define the game loop
     function gameLoop() {
         if (isPaused) return
+
+        if (gameMode != 2) return;
 
         if (!isMoving) {
             if (keysPressed['a']) {
@@ -134,17 +135,10 @@ function sharkAttack(imageLoader) {
         return distance < minDistance;
     }
 
-
     function getCurrentLevel() {
         let gameLevel = levels.find(level => level.id === currentScore.level);
         if (!gameLevel) gameLevel = levels.find(level => level.id === 1);
         return gameLevel;
-    }
-
-    function startGame() {
-        // createBuildings();
-        // panels.hideNextLevelPanel();
-        // panels.hideBeginGameContainer();
     }
 
     function createPlayer(x, y) {
@@ -171,14 +165,23 @@ function sharkAttack(imageLoader) {
     app.stage.addChild(playerContainer);
     app.stage.addChild(sharkContainer);
     app.stage.addChild(waterSplashContainer);
+    const progressBar = new ProgressBar(400, 634);
+    app.stage.addChild(progressBar.container);
+    const panels = new Panels(app.screen.width, app.screen.height);
+    app.stage.addChild(panels.getBeginGameContainer(currentScore.level));
+    app.stage.addChild(panels.getRetryContainer());
+    app.stage.addChild(panels.getNextLevelContainer());
+    app.stage.addChild(panels.getPauseContainer());
 
     let speed = 0.5;
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < currentLevel.sharks; i++) {
         const shark = new Shark(netGrid, netEatenContainer, imageLoader, player, gridCountX, gridCountY, speed);
         speed += 0.05;
         sharkContainer.addChild(shark.sharkSprite);
         sharks.push(shark);
     }
+
+    performanceTestReady();
 
     const orStrings = (a, b) => {
         let result = "";
@@ -199,7 +202,12 @@ function sharkAttack(imageLoader) {
         return result;
     };
 
-let previousDirection = "0000";
+    function performanceTestReady() {
+        panels.showBeginGamePanel();
+        gameMode = 1
+    }
+
+    let previousDirection = "0000";
     function drawTrailImage(x, y, direction) {
         if (netGrid[x][y] === null) {
             const imageId = orStrings(previousDirection, direction)
@@ -282,6 +290,10 @@ let previousDirection = "0000";
             const texture = imageLoader.getImage("net-" + imageId);
             netGrid[currentGridX][currentGridY].sprite.texture = texture;
             netGrid[currentGridX][currentGridY].imageId = imageId;
+        } else {
+            currentScore.increment(1)
+            updateScoreDisplay()
+            updateProgressBar()
         }
 
         gsap.to(player, {
@@ -297,7 +309,43 @@ let previousDirection = "0000";
 
     function handleInput() {
         window.addEventListener('keydown', (event) => {
-            if (!isGameReady) return;
+            if (gameMode === 0) return;
+
+            if (gameMode == 3) {
+                if (event.code === 'Enter') {
+                    currentScore.level = currentScore.level + 1;
+                    if (currentScore.level > levels.length - 1) {
+                        currentScore.level = 1;
+                    }
+
+                    gameMode = 2;
+                    panels.hideNextLevelPanel();
+                }
+
+                return;
+            }
+
+            if (gameMode <= 1) {
+                if (event.code === 'Enter') {
+                    currentScore.level = currentScore.level + 1;
+                    if (currentScore.level > levels.length - 1) {
+                        currentScore.level = 1;
+                    }
+
+                    gameMode = 2;
+                    panels.hideBeginGameContainer();
+                    gameLoop();
+                }
+
+                if (event.code === 'KeyN' && currentScore.level > 1) {
+                    currentScore.reset();
+                    currentScore.level = 1;
+                    panels.hideBeginGameContainer();
+                    gameLoop();
+                }
+                return;
+            }
+
             if (event.code === "KeyP") {
                 if (isPaused) {
                     panels.hidePauseContainer();
@@ -317,6 +365,8 @@ let previousDirection = "0000";
         });
 
         window.addEventListener('keyup', (event) => {
+            if (gameMode <= 1 || gameMode == 3) return;
+
             if (['a', 'z', ',', '.'].includes(event.key)) {
                 keysPressed[event.key] = false;
                 event.preventDefault();
@@ -339,7 +389,7 @@ let previousDirection = "0000";
         scoreText.y = 636;
 
         const levelText = new PIXI.Text("LEVEL:", scoreStyle);
-        levelText.x = 320;
+        levelText.x = 230;
         levelText.y = 636;
 
         const highScoreText = new PIXI.Text("HIGH SCORE:", scoreStyle);
@@ -364,7 +414,7 @@ let previousDirection = "0000";
         scoreValue.y = 634;
 
         const levelValue = new PIXI.Text("" + currentScore.level, scoreStyle);
-        levelValue.x = 392;
+        levelValue.x = 302;
         levelValue.y = 634;
 
         const highScoreValue = new PIXI.Text("" + currentScore.highScore, scoreStyle);
@@ -379,6 +429,47 @@ let previousDirection = "0000";
         scoreDisplay.scoreValue.text = "" + currentScore.score;
         scoreDisplay.levelValue.text = "" + currentScore.level;
         scoreDisplay.highScoreValue.text = "" + currentScore.highScore;
+    }
+
+    /* function updateProgressBar() {
+        let totalEntries = 0;
+        let nonNullEntries = 0;
+
+        for (let x = 0; x < netGrid.length; x++) {
+            for (let y = 0; y < netGrid[x].length; y++) {
+                totalEntries++;
+                if (netGrid[x][y] !== null) {
+                    nonNullEntries++;
+                }
+            }
+        }
+
+        const percentage = (nonNullEntries / totalEntries) * 100;
+        progressBar.setPercentage(percentage)
+    } */
+
+    function updateProgressBar() {
+        let nonNullCount = 0;
+        let totalCount = netGrid.length * netGrid[0].length;
+
+        for (let x = 0; x < netGrid.length; x++) {
+            for (let y = 0; y < netGrid[x].length; y++) {
+                if (netGrid[x][y] !== null) {
+                    nonNullCount++;
+                }
+            }
+        }
+
+        let actualPercentage = (nonNullCount / totalCount) * 100;
+        let progressBarPercentage = (actualPercentage / currentLevel.coverage) * 100;
+        progressBarPercentage = Math.min(Math.max(progressBarPercentage, 0), 100);
+
+        if (progressBarPercentage === 100) {
+            gameMode = 3;
+            panels.showNextLevelPanel()
+            return;
+        }
+        progressBar.setPercentage(progressBarPercentage)
     }
 
     function resizeStage() {
@@ -397,7 +488,6 @@ let previousDirection = "0000";
 
     resizeStage();
     window.addEventListener('resize', resizeStage);
-    gameLoop();
 }
 
 

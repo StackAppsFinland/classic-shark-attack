@@ -1,22 +1,14 @@
 class GameLevel {
     constructor(id = 1,
-                ruleName ="none",
-                buildingCount = 1,
-                minHeight = 10,
-                maxHeight = 20,
-                numberOfBombs = 1,
-                linkId = 0,
-                clouds=0,
-                cloudSize="small") {
+                sharks=1,
+                octopuses = 0,
+                speed = 1,
+                coverage=25) {
         this.id = id;
-        this.ruleName = ruleName;
-        this.buildingCount = buildingCount;
-        this.minHeight = minHeight;
-        this.maxHeight = maxHeight;
-        this.numberOfBombs = numberOfBombs;
-        this.linkId = linkId;
-        this.clouds = clouds;
-        this.cloudSize = cloudSize;
+        this.sharks = sharks;
+        this.octopuses = octopuses;
+        this.speed = speed;
+        this.coverage = coverage;
     }
 }
 
