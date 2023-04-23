@@ -5,6 +5,7 @@ import levels from './levels.js';
 import Shark from "./shark.js";
 import WaterSplashEffect from "./waterSplashEffect.js";
 import ProgressBar from "./progressBar.js";
+import Octopus from "./octopus.js";
 
 WebFont.load({
     custom: {
@@ -26,6 +27,15 @@ function sharkAttack(imageLoader) {
         src: ['sounds/player-explode.wav'],
         volume: 1.0
     });
+
+    const sound = new Howl({
+        src: ['./sounds/music.mp3'],
+        loop: true,
+        volume: 0.1, // Set the volume to a low level (0.1)
+    });
+
+    sound.play();
+
     const gridSize = 28;
     const gridCountX = 30;
     const gridCountY = 22;
@@ -35,7 +45,7 @@ function sharkAttack(imageLoader) {
     let playerSpeed = 1.35;
     let isPaused = false;
     const blockSize = 20;
-    const netGrid = new Array(gridCountX).fill(null).map(() => new Array(gridCountY).fill(null));
+    let netGrid = new Array(gridCountX).fill(null).map(() => new Array(gridCountY).fill(null));
     const keysPressed = {
         a: false,
         z: false,
@@ -43,31 +53,52 @@ function sharkAttack(imageLoader) {
         '.': false,
     };
     const autoPause = false;
-
-// Create a PixiJS Application
+    let previousDirection = "0000";
+    let currentGridX = 0;
+    let currentGridY = 0;
+    let isMoving = false;
     const app = new PIXI.Application({
-        width:  gridCountX * gridSize,
+        width: gridCountX * gridSize,
         height: (gridCountY + 1) * gridSize,
         backgroundColor: 0x3030FF
     });
 
     gsap.registerPlugin(PixiPlugin);
-
     currentScore.loadGameData();
-    const currentLevel = getCurrentLevel();
+    let currentLevel = getCurrentLevel();
     handleInput()
-// Add after app created
-    const canvasWidth = app.screen.width;
-    const canvasHeight = app.screen.height;
     drawScoreText();
     const scoreDisplay = drawScores();
-
     const sharks = [];
 
-// Add the application view to the HTML body
+    // Add the application view to the HTML body
     document.body.appendChild(app.view);
 
-    //const staticParts = drawStaticParts();
+    // Create containers
+    const player = createPlayer(0, 0);
+    const netContainer = new PIXI.Container();
+    const netEatenContainer = new PIXI.Container();
+    const playerContainer = new PIXI.Container();
+    const sharkContainer = new PIXI.Container();
+    const octopusContainer = new PIXI.Container();
+    const waterSplashContainer = new PIXI.Container();
+
+    playerContainer.addChild(player)
+    app.stage.addChild(netContainer);
+    app.stage.addChild(netEatenContainer);
+    app.stage.addChild(playerContainer);
+    app.stage.addChild(sharkContainer);
+    app.stage.addChild(octopusContainer);
+    app.stage.addChild(waterSplashContainer);
+    const progressBar = new ProgressBar(400, 634);
+    app.stage.addChild(progressBar.container);
+    const panels = new Panels(app.screen.width, app.screen.height);
+    app.stage.addChild(panels.getBeginGameContainer(currentScore.level));
+    app.stage.addChild(panels.getRetryContainer());
+    app.stage.addChild(panels.getNextLevelContainer());
+    app.stage.addChild(panels.getPauseContainer());
+    performanceTestReady();
+
     // Define the game loop
     function gameLoop() {
         if (isPaused) return
@@ -102,8 +133,39 @@ function sharkAttack(imageLoader) {
         }
 
         updateSpecialEffects();
-
         requestAnimationFrame(gameLoop);
+    }
+
+    function resetGame() {
+        sharks.length = 0
+        //sharkContainer.destroy({ children: true });
+        sharkContainer.removeChildren();
+        //netContainer.destroy({ children: true });
+        netContainer.removeChildren();
+        netGrid = new Array(gridCountX).fill(null).map(() => new Array(gridCountY).fill(null));
+        currentLevel = getCurrentLevel()
+        let speed = currentLevel.speed;
+        for (let i = 0; i < currentLevel.sharks; i++) {
+            const shark = new Shark(netGrid, netEatenContainer, imageLoader, player, gridCountX, gridCountY, currentLevel.speed);
+            speed += 0.05;
+            sharkContainer.addChild(shark.sharkSprite);
+            sharks.push(shark);
+        }
+
+        for (let i = 0; i < 10; i++) {
+            const octopus = new Octopus(imageLoader, gridCountX, gridCountY);
+            octopusContainer.addChild(octopus.octopusSprite);
+        }
+
+        currentGridX = 0;
+        currentGridY = 0;
+
+        player.x = 20 + (currentGridX * gridSize);
+        player.y = 18 + (currentGridY * gridSize);
+
+        for (let key in keysPressed) {
+            keysPressed[key] = false;
+        }
     }
 
     function updateSpecialEffects() {
@@ -152,37 +214,6 @@ function sharkAttack(imageLoader) {
         return spool;
     }
 
-    const player = createPlayer(0, 0);
-
-    const netContainer = new PIXI.Container();
-    const netEatenContainer = new PIXI.Container();
-    const playerContainer = new PIXI.Container();
-    const sharkContainer = new PIXI.Container();
-    const waterSplashContainer = new PIXI.Container();
-    playerContainer.addChild(player)
-    app.stage.addChild(netContainer);
-    app.stage.addChild(netEatenContainer);
-    app.stage.addChild(playerContainer);
-    app.stage.addChild(sharkContainer);
-    app.stage.addChild(waterSplashContainer);
-    const progressBar = new ProgressBar(400, 634);
-    app.stage.addChild(progressBar.container);
-    const panels = new Panels(app.screen.width, app.screen.height);
-    app.stage.addChild(panels.getBeginGameContainer(currentScore.level));
-    app.stage.addChild(panels.getRetryContainer());
-    app.stage.addChild(panels.getNextLevelContainer());
-    app.stage.addChild(panels.getPauseContainer());
-
-    let speed = 0.5;
-    for (let i = 0; i < currentLevel.sharks; i++) {
-        const shark = new Shark(netGrid, netEatenContainer, imageLoader, player, gridCountX, gridCountY, speed);
-        speed += 0.05;
-        sharkContainer.addChild(shark.sharkSprite);
-        sharks.push(shark);
-    }
-
-    performanceTestReady();
-
     const orStrings = (a, b) => {
         let result = "";
 
@@ -207,7 +238,6 @@ function sharkAttack(imageLoader) {
         gameMode = 1
     }
 
-    let previousDirection = "0000";
     function drawTrailImage(x, y, direction) {
         if (netGrid[x][y] === null) {
             const imageId = orStrings(previousDirection, direction)
@@ -218,21 +248,21 @@ function sharkAttack(imageLoader) {
             sprite.width = 28;
             sprite.height = 28;
             netContainer.addChild(sprite);
-            netGrid[x][y] = { sprite, imageId: imageId };
+            netGrid[x][y] = {sprite, imageId: imageId};
 
             if (direction === "0100") previousDirection = "0001"
             if (direction === "0001") previousDirection = "0100"
             if (direction === "1000") previousDirection = "0010"
             if (direction === "0010") previousDirection = "1000"
 
-            for(const shark in sharks) {
-               sharks[shark].setNetEatingDelay(3000);
+            for (const shark in sharks) {
+                sharks[shark].setNetEatingDelay(3000);
             }
 
         } else {
             const currentImageId = netGrid[x][y].imageId;
             if (direction === "0100") previousDirection = "0101"
-           if (direction === "0001") previousDirection = "0101"
+            if (direction === "0001") previousDirection = "0101"
             if (direction === "1000") previousDirection = "1010"
             if (direction === "0010") previousDirection = "1000"
 
@@ -244,10 +274,6 @@ function sharkAttack(imageLoader) {
             }
         }
     }
-
-    let currentGridX = 0;
-    let currentGridY = 0;
-    let isMoving = false;
 
     function movePlayer(direction) {
         if (isMoving) return;
@@ -297,8 +323,8 @@ function sharkAttack(imageLoader) {
         }
 
         gsap.to(player, {
-            x:  20 + (currentGridX * gridSize),
-            y:  18 + (currentGridY * gridSize),
+            x: 20 + (currentGridX * gridSize),
+            y: 18 + (currentGridY * gridSize),
             rotation: player.rotation + PIXI.DEG_TO_RAD * 10,
             duration: 0.10,
             onComplete: () => {
@@ -318,8 +344,10 @@ function sharkAttack(imageLoader) {
                         currentScore.level = 1;
                     }
 
+                    resetGame();
                     gameMode = 2;
                     panels.hideNextLevelPanel();
+                    gameLoop();
                 }
 
                 return;
@@ -334,12 +362,14 @@ function sharkAttack(imageLoader) {
 
                     gameMode = 2;
                     panels.hideBeginGameContainer();
+                    resetGame();
                     gameLoop();
                 }
 
                 if (event.code === 'KeyN' && currentScore.level > 1) {
                     currentScore.reset();
                     currentScore.level = 1;
+                    resetGame();
                     panels.hideBeginGameContainer();
                     gameLoop();
                 }
@@ -431,23 +461,6 @@ function sharkAttack(imageLoader) {
         scoreDisplay.highScoreValue.text = "" + currentScore.highScore;
     }
 
-    /* function updateProgressBar() {
-        let totalEntries = 0;
-        let nonNullEntries = 0;
-
-        for (let x = 0; x < netGrid.length; x++) {
-            for (let y = 0; y < netGrid[x].length; y++) {
-                totalEntries++;
-                if (netGrid[x][y] !== null) {
-                    nonNullEntries++;
-                }
-            }
-        }
-
-        const percentage = (nonNullEntries / totalEntries) * 100;
-        progressBar.setPercentage(percentage)
-    } */
-
     function updateProgressBar() {
         let nonNullCount = 0;
         let totalCount = netGrid.length * netGrid[0].length;
@@ -475,7 +488,7 @@ function sharkAttack(imageLoader) {
     function resizeStage() {
         const padding = 50;
         const targetHeight = window.innerHeight - 2 * padding;
-        const aspectRatio =  (4 + gridSize * gridCountX) / ((gridCountY + 1) * gridSize);
+        const aspectRatio = (4 + gridSize * gridCountX) / ((gridCountY + 1) * gridSize);
         const targetWidth = targetHeight * aspectRatio;
 
         app.renderer.resize(targetWidth + 20, targetHeight + 20);

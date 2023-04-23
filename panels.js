@@ -69,8 +69,8 @@ class Panels {
         // Fade out the retryContainer using GSAP with a 1-second delay
         gsap.to(this.nextLevelContainer, {
             alpha: 0, // Target alpha value
-            duration: 1.0, // Animation duration in seconds
-            delay: 0.5 // Delay before starting the animation in seconds
+            duration: 0.25, // Animation duration in seconds
+            delay: 0.1 // Delay before starting the animation in seconds
         });
     }
 
@@ -78,8 +78,8 @@ class Panels {
         // Fade out the retryContainer using GSAP with a 1-second delay
         gsap.to(this.beginGameContainer, {
             alpha: 0, // Target alpha value
-            duration: 1.0, // Animation duration in seconds
-            delay: 0.5 // Delay before starting the animation in seconds
+            duration: 0.25, // Animation duration in seconds
+            delay: 0.25 // Delay before starting the animation in seconds
         });
     }
 

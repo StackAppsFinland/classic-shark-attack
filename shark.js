@@ -25,6 +25,7 @@ class Shark {
         this.scheduleImageUpdate();
         this.netEatingDelay = Date.now() + 10000;
         this.angryCounter = 0;
+        this.changeDirectionCooldown = 0;
     }
 
     scheduleImageUpdate() {
@@ -99,44 +100,38 @@ class Shark {
         const playerGridX = Math.floor(this.playerSprite.x / this.gridSize);
         const playerGridY = Math.floor(this.playerSprite.y / this.gridSize);
 
-        if (this.angryCounter > 0) {
-            if (this.direction.y === 0) {
-                if (playerGridX === gridX) {
-                    this.alignToGrid();
-                    let newDirection;
-                    if (playerGridY > gridY) {
-                        newDirection = { x: 0, y: 1 }; // South
-                    } else {
-                        newDirection = { x: 0, y: -1 }; // North
-                    }
-                    const targetRotation = this.directionToRotation(newDirection);
-                    this.direction = newDirection;
+        this.changeDirectionCooldown -= this.speed;
+        if (this.changeDirectionCooldown < 0) {
+            this.changeDirectionCooldown = 0;
+        }
 
-                    gsap.to(this.sharkSprite, {
-                        rotation: targetRotation,
-                        duration: 0.2,
-                    });
-                    return;
+        if (this.angryCounter > 0 && this.changeDirectionCooldown === 0) {
+            this.alignToGrid();
+
+            let newDirection;
+            if (this.direction.y === 0) {
+                if (playerGridY > gridY) {
+                    newDirection = { x: 0, y: 1 }; // South
+                } else {
+                    newDirection = { x: 0, y: -1 }; // North
                 }
             } else if (this.direction.x === 0) {
-                if (playerGridY === gridY) {
-                    this.alignToGrid();
-                    let newDirection;
-                    if (playerGridX > gridX) {
-                        newDirection = { x: 1, y: 0 }; // East
-                    } else {
-                        newDirection = { x: -1, y: 0 }; // West
-                    }
-                    const targetRotation = this.directionToRotation(newDirection);
-                    this.direction = newDirection;
-
-                    gsap.to(this.sharkSprite, {
-                        rotation: targetRotation,
-                        duration: 0.2,
-                    });
-                    return;
+                if (playerGridX > gridX) {
+                    newDirection = { x: 1, y: 0 }; // East
+                } else {
+                    newDirection = { x: -1, y: 0 }; // West
                 }
             }
+
+            const targetRotation = this.directionToRotation(newDirection);
+            this.direction = newDirection;
+
+            gsap.to(this.sharkSprite, {
+                rotation: targetRotation,
+                duration: 0.2,
+            });
+            this.changeDirectionCooldown = 1000;
+            return;
         }
 
         if (this.netGrid[gridX][gridY] === null || Date.now() > this.netEatingDelay) {
@@ -189,11 +184,18 @@ class Shark {
             const gridX = Math.floor(newX / this.gridSize);
             const gridY = Math.floor(newY / this.gridSize);
 
+            const gridPlayerX = Math.floor(this.playerSprite.x / this.gridSize);
+            const gridPlayerY = Math.floor(this.playerSprite.y / this.gridSize);
+
             if ((gridX < 0 || gridX >= this.gridCountX) || (gridY < 0 || gridY >= this.gridCountY)) {
                 return false;
             }
 
-            return this.netGrid[gridX][gridY] === null || Date.now() > this.netEatingDelay;
+            if (gridX === gridPlayerX && gridY === gridPlayerY) {
+                return true;
+            }
+
+            return this.netGrid[gridX][gridY] === null  || Date.now() > this.netEatingDelay;
         });
 
         if (availableDirections.length > 0) {

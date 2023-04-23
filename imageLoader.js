@@ -22,7 +22,8 @@ class ImageLoader {
         'net-1101.png',
         'net-1110.png',
         'net-1111.png',
-        'spool.png'
+        'spool.png',
+        'frame_.png:48'
     ];
     this.textures = new Map();
     this.loadTextures(callback);
