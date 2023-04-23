@@ -13,3 +13,4 @@ bin/
 *.war
 *.jar
 *.ear
+/node_modules/

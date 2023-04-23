@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@pixi/gif": "^2.1.0"
+  }
+}
