@@ -75,13 +75,13 @@ function sharkAttack(imageLoader) {
     document.body.appendChild(app.view);
 
     // Create containers
-    const player = createPlayer(0, 0);
     const netContainer = new PIXI.Container();
     const netEatenContainer = new PIXI.Container();
     const playerContainer = new PIXI.Container();
     const sharkContainer = new PIXI.Container();
     const octopusContainer = new PIXI.Container();
     const waterSplashContainer = new PIXI.Container();
+    let player = createPlayer();
 
     playerContainer.addChild(player)
     app.stage.addChild(netContainer);
@@ -152,16 +152,31 @@ function sharkAttack(imageLoader) {
             sharks.push(shark);
         }
 
-        for (let i = 0; i < 10; i++) {
-            const octopus = new Octopus(imageLoader, gridCountX, gridCountY);
+        for (let i = 0; i < currentLevel.octopuses; i++) {
+            let gridX, gridY, isOccupied;
+
+            // Generate random grid positions until an unoccupied one is found
+            do {
+                gridX = Math.floor(Math.random() * (gridCountX - 1));
+                gridY = Math.floor(Math.random() * (gridCountY - 1));
+                isOccupied = false;
+
+                for (let j = 0; j < octopusContainer.children.length; j++) {
+                    const existingOctopus = octopusContainer.children[j];
+                    if (existingOctopus.x === 7 + (gridX * 28 + 14) && existingOctopus.y === 5 + (gridY * 28 + 14)) {
+                        isOccupied = true;
+                        break;
+                    }
+                }
+            } while (isOccupied);
+
+            const octopus = new Octopus(imageLoader, gridX, gridY);
             octopusContainer.addChild(octopus.octopusSprite);
         }
 
+        updatePlayerPosition();
         currentGridX = 0;
         currentGridY = 0;
-
-        player.x = 20 + (currentGridX * gridSize);
-        player.y = 18 + (currentGridY * gridSize);
 
         for (let key in keysPressed) {
             keysPressed[key] = false;
@@ -203,16 +218,58 @@ function sharkAttack(imageLoader) {
         return gameLevel;
     }
 
-    function createPlayer(x, y) {
-        const texture = imageLoader.getImage("spool");
-        const spool = new PIXI.Sprite(texture);
-        spool.anchor.set(0.5, 0.5);
-        spool.width = 24;
-        spool.height = 24;
-        spool.x = 4 + (x * gridSize + gridSize / 2);
-        spool.y = 4 + (y * gridSize + gridSize / 2);
-        return spool;
+    function createPlayer() {
+        const texture = imageLoader.getImage("player1");
+        const playerSprite = new PIXI.Sprite(texture);
+        playerSprite.anchor.set(0.5, 0.5);
+        playerSprite.width = 24;
+        playerSprite.height = 24;
+        return playerSprite;
     }
+
+    function updatePlayerPosition() {
+        const placement = getSafePlayerPosition();
+        console.log(placement)
+        player.x = placement.x;
+        player.y = placement.y;
+    }
+
+    function getSafePlayerPosition() {
+        let safePosition = false;
+        let playerPosition = { x: 0, y: 0 };
+
+        while (!safePosition) {
+            const gridX = Math.floor(Math.random() * (gridCountX - 1));
+            const gridY = Math.floor(Math.random() * (gridCountY - 1));
+            playerPosition.x =  7 + (gridX * gridSize + gridSize / 2);
+            playerPosition.y = 5 + (gridY * gridSize + gridSize / 2);
+
+            let safeFromSharks = true;
+            sharkContainer.children.forEach(shark => {
+                const dx = Math.abs(shark.x - playerPosition.x);
+                const dy = Math.abs(shark.y - playerPosition.y);
+                if (dx <= 2 * gridSize && dy <= 2 * gridSize) {
+                    safeFromSharks = false;
+                }
+            });
+
+            let safeFromOctopuses = true;
+            octopusContainer.children.forEach(octopus => {
+                const dx = Math.abs(octopus.x - playerPosition.x);
+                const dy = Math.abs(octopus.y - playerPosition.y);
+                if (dx <= 2 * gridSize && dy <= 2 * gridSize) {
+                    safeFromOctopuses = false;
+                }
+            });
+
+            if (safeFromSharks && safeFromOctopuses) {
+                safePosition = true;
+            }
+        }
+
+        return playerPosition;
+    }
+
 
     const orStrings = (a, b) => {
         let result = "";
