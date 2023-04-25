@@ -28,21 +28,24 @@ function sharkAttack(imageLoader) {
         volume: 1.0
     });
 
-    const sound = new Howl({
+    const music = new Howl({
         src: ['./sounds/music.mp3'],
         loop: true,
         volume: 0.1, // Set the volume to a low level (0.1)
     });
 
-    sound.play();
+    music.play();
+
+    const INITIALIZE_GAME = 0;
+    const START_PANEL = 1;
+    const GAME_RUNNING = 2;
+    const NEXT_LEVEL = 3;
 
     const gridSize = 28;
     const gridCountX = 30;
     const gridCountY = 22;
     const currentScore = new Score();
-    let gameMode = 0;
-    let testModeCounter = 0;
-    let playerSpeed = 1.35;
+    let gameMode = INITIALIZE_GAME;
     let isPaused = false;
     const blockSize = 20;
     let netGrid = new Array(gridCountX).fill(null).map(() => new Array(gridCountY).fill(null));
@@ -52,7 +55,7 @@ function sharkAttack(imageLoader) {
         ',': false,
         '.': false,
     };
-    const autoPause = false;
+    let muteMusic = false;
     let previousDirection = "0000";
     let currentGridX = 0;
     let currentGridY = 0;
@@ -97,13 +100,14 @@ function sharkAttack(imageLoader) {
     app.stage.addChild(panels.getRetryContainer());
     app.stage.addChild(panels.getNextLevelContainer());
     app.stage.addChild(panels.getPauseContainer());
+    app.stage.addChild(panels.getGetReadyContainer())
     performanceTestReady();
 
     // Define the game loop
     function gameLoop() {
         if (isPaused) return
 
-        if (gameMode != 2) return;
+        if (gameMode != GAME_RUNNING) return;
 
         if (!isMoving) {
             if (keysPressed['a']) {
@@ -136,11 +140,16 @@ function sharkAttack(imageLoader) {
         requestAnimationFrame(gameLoop);
     }
 
+    function pauseGameLoop() {
+        isPaused = true;
+        setTimeout(() => {
+            isPaused = false;
+            gameLoop()
+        }, 3000); // Pause for 3 seconds (3000 milliseconds)
+    }
     function resetGame() {
         sharks.length = 0
-        //sharkContainer.destroy({ children: true });
         sharkContainer.removeChildren();
-        //netContainer.destroy({ children: true });
         netContainer.removeChildren();
         netGrid = new Array(gridCountX).fill(null).map(() => new Array(gridCountY).fill(null));
         currentLevel = getCurrentLevel()
@@ -174,9 +183,7 @@ function sharkAttack(imageLoader) {
             octopusContainer.addChild(octopus.octopusSprite);
         }
 
-        updatePlayerPosition();
-        currentGridX = 0;
-        currentGridY = 0;
+        setInitialPlayerPosition();
 
         for (let key in keysPressed) {
             keysPressed[key] = false;
@@ -219,7 +226,7 @@ function sharkAttack(imageLoader) {
     }
 
     function createPlayer() {
-        const texture = imageLoader.getImage("player1");
+        const texture = imageLoader.getImage("player2");
         const playerSprite = new PIXI.Sprite(texture);
         playerSprite.anchor.set(0.5, 0.5);
         playerSprite.width = 24;
@@ -227,22 +234,23 @@ function sharkAttack(imageLoader) {
         return playerSprite;
     }
 
-    function updatePlayerPosition() {
-        const placement = getSafePlayerPosition();
-        console.log(placement)
+    function setInitialPlayerPosition() {
+        const placement = getSafeInitialPlayerPosition();
         player.x = placement.x;
         player.y = placement.y;
     }
 
-    function getSafePlayerPosition() {
+    function getSafeInitialPlayerPosition() {
         let safePosition = false;
         let playerPosition = { x: 0, y: 0 };
 
         while (!safePosition) {
             const gridX = Math.floor(Math.random() * (gridCountX - 1));
             const gridY = Math.floor(Math.random() * (gridCountY - 1));
+            currentGridX = gridX
+            currentGridY = gridY
             playerPosition.x =  7 + (gridX * gridSize + gridSize / 2);
-            playerPosition.y = 5 + (gridY * gridSize + gridSize / 2);
+            playerPosition.y = 7 + (gridY * gridSize + gridSize / 2);
 
             let safeFromSharks = true;
             sharkContainer.children.forEach(shark => {
@@ -270,7 +278,6 @@ function sharkAttack(imageLoader) {
         return playerPosition;
     }
 
-
     const orStrings = (a, b) => {
         let result = "";
 
@@ -292,7 +299,7 @@ function sharkAttack(imageLoader) {
 
     function performanceTestReady() {
         panels.showBeginGamePanel();
-        gameMode = 1
+        gameMode = START_PANEL;
     }
 
     function drawTrailImage(x, y, direction) {
@@ -381,7 +388,7 @@ function sharkAttack(imageLoader) {
 
         gsap.to(player, {
             x: 20 + (currentGridX * gridSize),
-            y: 18 + (currentGridY * gridSize),
+            y: 20 + (currentGridY * gridSize),
             rotation: player.rotation + PIXI.DEG_TO_RAD * 10,
             duration: 0.10,
             onComplete: () => {
@@ -392,9 +399,9 @@ function sharkAttack(imageLoader) {
 
     function handleInput() {
         window.addEventListener('keydown', (event) => {
-            if (gameMode === 0) return;
+            if (gameMode === INITIALIZE_GAME) return;
 
-            if (gameMode == 3) {
+            if (gameMode == NEXT_LEVEL) {
                 if (event.code === 'Enter') {
                     currentScore.level = currentScore.level + 1;
                     if (currentScore.level > levels.length - 1) {
@@ -402,25 +409,27 @@ function sharkAttack(imageLoader) {
                     }
 
                     resetGame();
-                    gameMode = 2;
+                    gameMode = GAME_RUNNING;
                     panels.hideNextLevelPanel();
-                    gameLoop();
+                    panels.showGetReadyPanel();
+                    pauseGameLoop();
                 }
 
                 return;
             }
 
-            if (gameMode <= 1) {
+            if (gameMode <= START_PANEL) {
                 if (event.code === 'Enter') {
                     currentScore.level = currentScore.level + 1;
                     if (currentScore.level > levels.length - 1) {
                         currentScore.level = 1;
                     }
 
-                    gameMode = 2;
+                    gameMode = GAME_RUNNING;
                     panels.hideBeginGameContainer();
                     resetGame();
-                    gameLoop();
+                    panels.showGetReadyPanel();
+                    pauseGameLoop();
                 }
 
                 if (event.code === 'KeyN' && currentScore.level > 1) {
@@ -428,7 +437,8 @@ function sharkAttack(imageLoader) {
                     currentScore.level = 1;
                     resetGame();
                     panels.hideBeginGameContainer();
-                    gameLoop();
+                    panels.showGetReadyPanel();
+                    pauseGameLoop();
                 }
                 return;
             }
@@ -445,6 +455,16 @@ function sharkAttack(imageLoader) {
                 }
             }
 
+            if (event.code === "KeyM") {
+                muteMusic = !muteMusic;
+
+                if (muteMusic) {
+                    music.pause();
+                } else {
+                    music.play();
+                }
+            }
+
             if (['a', 'z', ',', '.'].includes(event.key)) {
                 keysPressed[event.key] = true;
                 event.preventDefault();
@@ -452,7 +472,7 @@ function sharkAttack(imageLoader) {
         });
 
         window.addEventListener('keyup', (event) => {
-            if (gameMode <= 1 || gameMode == 3) return;
+            if (gameMode <= 1 || gameMode == NEXT_LEVEL) return;
 
             if (['a', 'z', ',', '.'].includes(event.key)) {
                 keysPressed[event.key] = false;
@@ -535,7 +555,7 @@ function sharkAttack(imageLoader) {
         progressBarPercentage = Math.min(Math.max(progressBarPercentage, 0), 100);
 
         if (progressBarPercentage === 100) {
-            gameMode = 3;
+            gameMode = NEXT_LEVEL;
             panels.showNextLevelPanel()
             return;
         }

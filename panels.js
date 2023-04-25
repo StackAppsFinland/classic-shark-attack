@@ -8,6 +8,7 @@ class Panels {
         this.retryContainer = new PIXI.Container();
         this.nextLevelContainer = new PIXI.Container();
         this.pausedContainer = new PIXI.Container();
+        this.getReadyContainer = new PIXI.Container();
     }
 
     showBeginGamePanel() {
@@ -251,6 +252,45 @@ class Panels {
         this.nextLevelContainer.addChild(tryAgainText);
 
         return this.nextLevelContainer;
+    }
+
+    getGetReadyContainer() {
+        const textStyle = new PIXI.TextStyle({
+            fontFamily: 'space-font',
+            fontSize: 50,
+            fill: 'red',
+            dropShadow: true,
+            dropShadowColor: 0x000000,
+            dropShadowDistance: 3,
+        });
+        const getReadyText = new PIXI.Text('GET READY!', textStyle);
+        getReadyText.anchor.set(0.5);
+        getReadyText.x = this.canvasWidth / 2;
+        getReadyText.y = this.canvasHeight / 2;
+        this.getReadyContainer.alpha = 0;
+        this.getReadyContainer.addChild(getReadyText);
+        return this.getReadyContainer;
+    }
+
+    showGetReadyPanel() {
+        // Show the "GET READY!" text
+        this.getReadyContainer.alpha = 0;
+
+        // Flash the "GET READY!" text for 3 seconds
+        gsap.to(this.getReadyContainer, {
+            alpha: 1,
+            duration: 0.5,
+            yoyo: true,
+            repeat: 4,
+            delay: 0.5,
+            onComplete: () => {
+                this.hideGetReadyPanel();
+            },
+        });
+    }
+
+    hideGetReadyPanel() {
+        this.getReadyContainer.alpha = 0;
     }
 }
 

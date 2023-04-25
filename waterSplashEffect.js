@@ -32,9 +32,9 @@ class WaterSplashEffect {
 
             const whichColor = Math.floor(Math.random() * 2) + 1;
             if (whichColor > 1)
-                rectangle.beginFill(0xc1e4fe);
+                rectangle.beginFill(0x8dd8e6);
             else
-                rectangle.beginFill(0x006994);
+                rectangle.beginFill(0x2f8dff);
 
             rectangle.drawRect(0, 0, thickness, length);
             rectangle.endFill();

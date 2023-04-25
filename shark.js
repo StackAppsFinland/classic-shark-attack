@@ -144,14 +144,14 @@ class Shark {
                 let offsetY = 0;
                 if (this.direction.y === -1) {
                     offsetX = 20;
-                    offsetY = 10;
+                    offsetY = 8;
                 }
                 if (this.direction.y === 1) {
                     offsetX = 20;
-                    offsetY = 10;
+                    offsetY = 14;
                 }
                 if (this.direction.x === 1) {
-                    offsetX = 14;
+                    offsetX = 18;
                     offsetY = 18;
                 }
                 if (this.direction.x === -1) {
