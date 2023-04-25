@@ -6,6 +6,8 @@ import Shark from "./shark.js";
 import WaterSplashEffect from "./waterSplashEffect.js";
 import ProgressBar from "./progressBar.js";
 import Octopus from "./octopus.js";
+import BrightnessFlash from "./brightnessFlash.js";
+import brightnessFlash from "./brightnessFlash.js";
 
 WebFont.load({
     custom: {
@@ -23,9 +25,20 @@ WebFont.load({
 });
 
 function sharkAttack(imageLoader) {
-    const explodeSound = new Howl({
-        src: ['sounds/player-explode.wav'],
+    const playerSplash = new Howl({
+        src: ['sounds/splash.mp3'],
         volume: 1.0
+    });
+
+    const tada = new Howl({
+        src: ['sounds/tada.mp3'],
+        volume: 1.0
+    });
+
+    const reelNoise = new Howl({
+        src: ['sounds/reel.wav'],
+        loop: true,
+        volume: 0.5
     });
 
     const music = new Howl({
@@ -85,6 +98,7 @@ function sharkAttack(imageLoader) {
     const octopusContainer = new PIXI.Container();
     const waterSplashContainer = new PIXI.Container();
     let player = createPlayer();
+    let screenFlash = new BrightnessFlash(app)
 
     playerContainer.addChild(player)
     app.stage.addChild(netContainer);
@@ -131,6 +145,7 @@ function sharkAttack(imageLoader) {
             if (checkCollision(player, shark.sharkSprite)) {
                 if (waterSplashContainer.children.length == 0) {
                     const waterSplashEffect = new WaterSplashEffect(player.x, player.y, 3000, 600, 1.0);
+                    playerSplash.play();
                     waterSplashContainer.addChild(waterSplashEffect.container);
                 }
             }
@@ -231,6 +246,8 @@ function sharkAttack(imageLoader) {
         playerSprite.anchor.set(0.5, 0.5);
         playerSprite.width = 24;
         playerSprite.height = 24;
+        playerSprite.x = -30;
+        playerSprite.y = -30;
         return playerSprite;
     }
 
@@ -467,15 +484,23 @@ function sharkAttack(imageLoader) {
 
             if (['a', 'z', ',', '.'].includes(event.key)) {
                 keysPressed[event.key] = true;
+
+                if (isPaused) return;
+
+                if (!reelNoise.playing())
+                    reelNoise.play();
                 event.preventDefault();
             }
         });
 
         window.addEventListener('keyup', (event) => {
-            if (gameMode <= 1 || gameMode == NEXT_LEVEL) return;
+            if (gameMode <= START_PANEL || gameMode == NEXT_LEVEL) return;
+
+            if (isPaused) return;
 
             if (['a', 'z', ',', '.'].includes(event.key)) {
                 keysPressed[event.key] = false;
+                reelNoise.pause();
                 event.preventDefault();
             }
         });
@@ -555,8 +580,11 @@ function sharkAttack(imageLoader) {
         progressBarPercentage = Math.min(Math.max(progressBarPercentage, 0), 100);
 
         if (progressBarPercentage === 100) {
+            screenFlash.flash()
+            tada.play();
             gameMode = NEXT_LEVEL;
-            panels.showNextLevelPanel()
+            panels.showNextLevelPanel();
+            reelNoise.stop();
             return;
         }
         progressBar.setPercentage(progressBarPercentage)
