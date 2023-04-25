@@ -8,7 +8,7 @@ class BrightnessFlash {
         this.brightnessOverlay = new PIXI.Graphics();
 
         // Set the fill color to white with an initial alpha value of 0 (transparent)
-        this.brightnessOverlay.beginFill(0xFFFFFF, 0);
+        this.brightnessOverlay.beginFill(0xFFFFFF, 1);
         this.brightnessOverlay.zIndex = 1000;
 
         // Draw a rectangle covering the entire screen

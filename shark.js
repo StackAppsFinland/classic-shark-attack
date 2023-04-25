@@ -1,7 +1,7 @@
 import NetEatingEffect from "./netEatingEffect.js";
 
 class Shark {
-    constructor(netGrid, netEatingContainer, imageLoader, playerSprite, gridCountX, gridCountY, speed) {
+    constructor(netGrid, netEatingContainer, imageLoader, playerSprite, gridCountX, gridCountY, speed, chompSound) {
         this.netGrid = netGrid;
         this.netEatingContainer = netEatingContainer;
         this.directions = [
@@ -26,6 +26,7 @@ class Shark {
         this.netEatingDelay = Date.now() + 10000;
         this.angryCounter = 0;
         this.changeDirectionCooldown = 0;
+        this.chompSound = chompSound;
     }
 
     scheduleImageUpdate() {
@@ -139,6 +140,8 @@ class Shark {
                 const parentContainer = this.netGrid[gridX][gridY].sprite.parent;
                 parentContainer.removeChild(this.netGrid[gridX][gridY].sprite)
                 this.netGrid[gridX][gridY] = null
+
+                if (!this.chompSound.playing()) this.chompSound.play();
 
                 let offsetX = 0;
                 let offsetY = 0;

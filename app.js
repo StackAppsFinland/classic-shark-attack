@@ -35,6 +35,12 @@ function sharkAttack(imageLoader) {
         volume: 1.0
     });
 
+
+    const chomp = new Howl({
+        src: ['sounds/chomp.wav'],
+        volume: 0.3
+    });
+
     const reelNoise = new Howl({
         src: ['sounds/reel.wav'],
         loop: true,
@@ -53,6 +59,7 @@ function sharkAttack(imageLoader) {
     const START_PANEL = 1;
     const GAME_RUNNING = 2;
     const NEXT_LEVEL = 3;
+    const RETRY_LEVEL = 4;
 
     const gridSize = 28;
     const gridCountX = 30;
@@ -150,7 +157,7 @@ function sharkAttack(imageLoader) {
                 }
             }
         }
-
+        updateProgressBar();
         updateSpecialEffects();
         requestAnimationFrame(gameLoop);
     }
@@ -170,7 +177,7 @@ function sharkAttack(imageLoader) {
         currentLevel = getCurrentLevel()
         let speed = currentLevel.speed;
         for (let i = 0; i < currentLevel.sharks; i++) {
-            const shark = new Shark(netGrid, netEatenContainer, imageLoader, player, gridCountX, gridCountY, currentLevel.speed);
+            const shark = new Shark(netGrid, netEatenContainer, imageLoader, player, gridCountX, gridCountY, currentLevel.speed, chomp);
             speed += 0.05;
             sharkContainer.addChild(shark.sharkSprite);
             sharks.push(shark);
@@ -400,7 +407,6 @@ function sharkAttack(imageLoader) {
         } else {
             currentScore.increment(1)
             updateScoreDisplay()
-            updateProgressBar()
         }
 
         gsap.to(player, {
