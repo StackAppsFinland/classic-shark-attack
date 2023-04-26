@@ -174,22 +174,20 @@ function sharkAttack(imageLoader) {
 
     function destroyChildren(container) {
         for (let i=container.children.length-1;i>=0;i--) {
+            if (container.children[i].instance) {
+                container.children[i].instance.destroy();
+                container.children[i].instance = null;
+            }
+
             container.children[i].destroy({children:true});
         }
+
+        container.removeChildren();
     }
 
     function resetGame() {
-        sharkContainer.children.forEach(shark => {
-            shark.instance.destroy();
-            shark.instance = null;
-        });
-
-        octopusContainer.children.forEach(octopus => {
-            octopus.instance.destroy();
-            octopus.instance = null;
-        });
-
         destroyChildren(sharkContainer)
+        destroyChildren(octopusContainer);
         destroyChildren(netContainer);
 
         netGrid = new Array(gridCountX).fill(null).map(() => new Array(gridCountY).fill(null));
