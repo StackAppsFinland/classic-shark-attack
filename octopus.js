@@ -11,6 +11,7 @@ class Octopus {
         this.restModeMaxCounter = 0;
         this.updateInterval = Math.floor(Math.random() * 21) + 10; // Random speed between 10ms to 30ms
         this.octopusSprite = this.createOctopusSprite();
+        this.imageUpdateTimeout = null;
         this.scheduleUpdate();
     }
 
@@ -22,6 +23,7 @@ class Octopus {
         octopusSprite.height = 39;
         octopusSprite.x =  7 + (this.gridX * this.gridSize + this.gridSize / 2);
         octopusSprite.y = 5 + (this.gridY * this.gridSize + this.gridSize / 2);
+        octopusSprite.instance = this;
         return octopusSprite;
     }
 
@@ -45,7 +47,7 @@ class Octopus {
             currentInterval *= Math.floor(Math.random() * 3) + 1; // Slow down by a factor of 1 to 3
         }
 
-        setTimeout(() => {
+        this.imageUpdateTimeout = setTimeout(() => {
             this.update();
             this.scheduleUpdate();
 
@@ -56,6 +58,10 @@ class Octopus {
                 this.stopRestMode();
             }
         }, currentInterval);
+    }
+
+    destroy() {
+        clearTimeout(this.imageUpdateTimeout);
     }
 
     update() {
@@ -77,8 +83,7 @@ class Octopus {
             }
         }
 
-        const texture = this.imageLoader.getImage(`frame_${this.frameCounter}`);
-        this.octopusSprite.texture = texture;
+        this.octopusSprite.texture = this.imageLoader.getImage(`frame_${this.frameCounter}`);
     }
 }
 

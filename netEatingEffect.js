@@ -1,3 +1,4 @@
+import { destroyChildren } from './utils.js';
 
 class NetEatingEffect {
     constructor(x, y, duration, numParticles, speedMultiplier) {
@@ -38,7 +39,7 @@ class NetEatingEffect {
         }
 
         setTimeout(() => {
-            this.container.destroy({ children: true });
+            destroyChildren(this.container)
             this.isFinished = true;
         }, this.duration);
     }

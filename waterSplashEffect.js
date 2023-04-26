@@ -1,3 +1,4 @@
+import { destroyChildren } from './utils.js';
 
 class WaterSplashEffect {
     constructor(x, y, duration, numParticles, speedMultiplier) {
@@ -27,7 +28,7 @@ class WaterSplashEffect {
     createParticles() {
         for (let i = 0; i < this.numParticles; i++) {
             const thickness = 2;
-            const length = Math.floor(Math.random() * 7) + 1;
+            const length = 2;
             const rectangle = new PIXI.Graphics();
 
             const whichColor = Math.floor(Math.random() * 2) + 1;
@@ -51,7 +52,7 @@ class WaterSplashEffect {
         }
 
         setTimeout(() => {
-            this.container.destroy({ children: true });
+            destroyChildren(this.container)
             this.isFinished = true;
         }, this.duration);
     }

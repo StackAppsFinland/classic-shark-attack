@@ -7,7 +7,6 @@ import WaterSplashEffect from "./waterSplashEffect.js";
 import ProgressBar from "./progressBar.js";
 import Octopus from "./octopus.js";
 import BrightnessFlash from "./brightnessFlash.js";
-import brightnessFlash from "./brightnessFlash.js";
 
 WebFont.load({
     custom: {
@@ -59,7 +58,8 @@ function sharkAttack(imageLoader) {
     const START_PANEL = 1;
     const GAME_RUNNING = 2;
     const NEXT_LEVEL = 3;
-    const RETRY_LEVEL = 4;
+    const PLAYER_DEAD = 4;
+    const RETRY_LEVEL = 5;
 
     const gridSize = 28;
     const gridCountX = 30;
@@ -92,8 +92,6 @@ function sharkAttack(imageLoader) {
     handleInput()
     drawScoreText();
     const scoreDisplay = drawScores();
-    const sharks = [];
-
     // Add the application view to the HTML body
     document.body.appendChild(app.view);
 
@@ -128,59 +126,80 @@ function sharkAttack(imageLoader) {
     function gameLoop() {
         if (isPaused) return
 
-        if (gameMode != GAME_RUNNING) return;
+        if (gameMode !== GAME_RUNNING && gameMode !== PLAYER_DEAD) return;
 
-        if (!isMoving) {
-            if (keysPressed['a']) {
-                if (previousDirection === "0000") previousDirection = "0010"
-                movePlayer('1000');
-            } else if (keysPressed['z']) {
-                if (previousDirection === "0000") previousDirection = "1000"
-                movePlayer('0010');
-            } else if (keysPressed[',']) {
-                if (previousDirection === "0000") previousDirection = "0100"
-                movePlayer('0001');
-            } else if (keysPressed['.']) {
-                if (previousDirection === "0000") previousDirection = "0001"
-                movePlayer('0100');
-            }
-        }
-
-        for (const shark of sharks) {
-            shark.update();
-
-            if (checkCollision(player, shark.sharkSprite)) {
-                if (waterSplashContainer.children.length == 0) {
-                    const waterSplashEffect = new WaterSplashEffect(player.x, player.y, 3000, 600, 1.0);
-                    playerSplash.play();
-                    waterSplashContainer.addChild(waterSplashEffect.container);
+        if (gameMode !== PLAYER_DEAD ) {
+            if (!isMoving) {
+                if (keysPressed['a']) {
+                    if (previousDirection === "0000") previousDirection = "0010"
+                    movePlayer('1000');
+                } else if (keysPressed['z']) {
+                    if (previousDirection === "0000") previousDirection = "1000"
+                    movePlayer('0010');
+                } else if (keysPressed[',']) {
+                    if (previousDirection === "0000") previousDirection = "0100"
+                    movePlayer('0001');
+                } else if (keysPressed['.']) {
+                    if (previousDirection === "0000") previousDirection = "0001"
+                    movePlayer('0100');
                 }
             }
+
+            for (const shark of sharkContainer.children) {
+                shark.instance.update();
+
+                if (checkCollision(player, shark)) {
+                    if (waterSplashContainer.children.length === 0) {
+                        const waterSplashEffect = new WaterSplashEffect(player.x, player.y, 3000, 600, 1.0);
+                        playerSplash.play();
+                        waterSplashContainer.addChild(waterSplashEffect.container);
+                        gameMode = PLAYER_DEAD;
+                    }
+                }
+            }
+            updateProgressBar();
         }
-        updateProgressBar();
+
         updateSpecialEffects();
         requestAnimationFrame(gameLoop);
     }
 
-    function pauseGameLoop() {
+    function delayStartGameLoop() {
         isPaused = true;
         setTimeout(() => {
             isPaused = false;
             gameLoop()
         }, 3000); // Pause for 3 seconds (3000 milliseconds)
     }
+
+    function destroyChildren(container) {
+        for (let i=container.children.length-1;i>=0;i--) {
+            container.children[i].destroy({children:true});
+        }
+    }
+
     function resetGame() {
-        sharks.length = 0
-        sharkContainer.removeChildren();
-        netContainer.removeChildren();
+        sharkContainer.children.forEach(shark => {
+            shark.instance.destroy();
+            shark.instance = null;
+        });
+
+        octopusContainer.children.forEach(octopus => {
+            octopus.instance.destroy();
+            octopus.instance = null;
+        });
+
+        destroyChildren(sharkContainer)
+        destroyChildren(netContainer);
+
         netGrid = new Array(gridCountX).fill(null).map(() => new Array(gridCountY).fill(null));
-        currentLevel = getCurrentLevel()
+        currentLevel = getCurrentLevel();
+        updateScoreDisplay();
         let speed = currentLevel.speed;
         for (let i = 0; i < currentLevel.sharks; i++) {
-            const shark = new Shark(netGrid, netEatenContainer, imageLoader, player, gridCountX, gridCountY, currentLevel.speed, chomp);
+            const shark = new Shark(netGrid, netEatenContainer, imageLoader, player, gridCountX, gridCountY, currentLevel.speed, chomp, currentLevel.eatNetAfter);
             speed += 0.05;
             sharkContainer.addChild(shark.sharkSprite);
-            sharks.push(shark);
         }
 
         for (let i = 0; i < currentLevel.octopuses; i++) {
@@ -218,7 +237,8 @@ function sharkAttack(imageLoader) {
             effect.update();
 
             if (effect.isFinished) {
-                netEatenContainer.removeChild(effect);
+                netEatenContainer.children[i].destroy()
+                netEatenContainer.removeChild(netEatenContainer.children[i]);
             }
         }
 
@@ -227,7 +247,13 @@ function sharkAttack(imageLoader) {
             effect.update();
 
             if (effect.isFinished) {
-                waterSplashContainer.removeChild(effect);
+                waterSplashContainer.children[i].destroy()
+                waterSplashContainer.removeChild(netEatenContainer.children[i]);
+                music.pause()
+                if (gameMode === PLAYER_DEAD) {
+                    gameMode = RETRY_LEVEL;
+                    panels.showRetryPanel()
+                }
             }
         }
     }
@@ -343,10 +369,9 @@ function sharkAttack(imageLoader) {
             if (direction === "1000") previousDirection = "0010"
             if (direction === "0010") previousDirection = "1000"
 
-            for (const shark in sharks) {
-                sharks[shark].setNetEatingDelay(3000);
-            }
-
+            sharkContainer.children.forEach(shark => {
+                shark.instance.setNetEatingDelay(currentLevel.eatNetAfter);
+            });
         } else {
             const currentImageId = netGrid[x][y].imageId;
             if (direction === "0100") previousDirection = "0101"
@@ -356,8 +381,7 @@ function sharkAttack(imageLoader) {
 
             const imageId = orStrings(currentImageId, direction)
             if (imageId !== currentImageId) {
-                const texture = imageLoader.getImage("net-" + imageId);
-                netGrid[x][y].sprite.texture = texture;
+                netGrid[x][y].sprite.texture = imageLoader.getImage("net-" + imageId);
                 netGrid[x][y].imageId = imageId;
             }
         }
@@ -401,8 +425,7 @@ function sharkAttack(imageLoader) {
             if (direction === "1000") oppositeDir = "0010"
             if (direction === "0010") oppositeDir = "1000"
             const imageId = orStrings(oppositeDir, netGrid[currentGridX][currentGridY].imageId)
-            const texture = imageLoader.getImage("net-" + imageId);
-            netGrid[currentGridX][currentGridY].sprite.texture = texture;
+            netGrid[currentGridX][currentGridY].sprite.texture = imageLoader.getImage("net-" + imageId);
             netGrid[currentGridX][currentGridY].imageId = imageId;
         } else {
             currentScore.increment(1)
@@ -422,85 +445,100 @@ function sharkAttack(imageLoader) {
 
     function handleInput() {
         window.addEventListener('keydown', (event) => {
-            if (gameMode === INITIALIZE_GAME) return;
+                if (gameMode === INITIALIZE_GAME) return;
 
-            if (gameMode == NEXT_LEVEL) {
-                if (event.code === 'Enter') {
-                    currentScore.level = currentScore.level + 1;
-                    if (currentScore.level > levels.length - 1) {
-                        currentScore.level = 1;
+                if (gameMode === RETRY_LEVEL) {
+                    if (event.code === 'KeyR') {
+                        resetGame();
+                        gameMode = GAME_RUNNING;
+                        panels.hideRetryPanel();
+                        panels.showGetReadyPanel();
+                        delayStartGameLoop();
                     }
 
-                    resetGame();
-                    gameMode = GAME_RUNNING;
-                    panels.hideNextLevelPanel();
-                    panels.showGetReadyPanel();
-                    pauseGameLoop();
+                    return;
                 }
 
-                return;
-            }
+                if (gameMode === NEXT_LEVEL) {
+                    if (event.code === 'Enter') {
+                        currentScore.level = currentScore.level + 1;
+                        if (currentScore.level > levels.length - 1) {
+                            currentScore.level = 1;
+                        }
 
-            if (gameMode <= START_PANEL) {
-                if (event.code === 'Enter') {
-                    currentScore.level = currentScore.level + 1;
-                    if (currentScore.level > levels.length - 1) {
-                        currentScore.level = 1;
+                        resetGame();
+                        gameMode = GAME_RUNNING;
+                        panels.hideNextLevelPanel();
+                        panels.showGetReadyPanel();
+                        delayStartGameLoop();
                     }
 
-                    gameMode = GAME_RUNNING;
-                    panels.hideBeginGameContainer();
-                    resetGame();
-                    panels.showGetReadyPanel();
-                    pauseGameLoop();
+                    return;
                 }
 
-                if (event.code === 'KeyN' && currentScore.level > 1) {
-                    currentScore.reset();
-                    currentScore.level = 1;
-                    resetGame();
-                    panels.hideBeginGameContainer();
-                    panels.showGetReadyPanel();
-                    pauseGameLoop();
+                if (gameMode <= START_PANEL) {
+                    if (event.code === 'Enter') {
+                        currentScore.level = currentScore.level + 1;
+                        if (currentScore.level > levels.length - 1) {
+                            currentScore.level = 1;
+                        }
+
+                        gameMode = GAME_RUNNING;
+                        panels.hideBeginGameContainer();
+                        resetGame();
+                        panels.showGetReadyPanel();
+                        delayStartGameLoop();
+                    }
+
+                    if (event.code === 'KeyN' && currentScore.level > 1) {
+                        currentScore.reset();
+                        currentScore.level = 1;
+                        resetGame();
+                        panels.hideBeginGameContainer();
+                        panels.showGetReadyPanel();
+                        delayStartGameLoop();
+                    }
+                    return;
                 }
-                return;
-            }
 
-            if (event.code === "KeyP") {
-                if (isPaused) {
-                    panels.hidePauseContainer();
-                    isPaused = false;
-                    Howler.mute(false);
-                } else {
-                    panels.showPauseContainer();
-                    isPaused = true;
-                    Howler.mute(true);
+                if (gameMode === GAME_RUNNING) {
+                    if (event.code === "KeyP") {
+                        if (isPaused) {
+                            panels.hidePauseContainer();
+                            isPaused = false;
+                            Howler.mute(false);
+                        } else {
+                            panels.showPauseContainer();
+                            isPaused = true;
+                            Howler.mute(true);
+                        }
+                    }
+
+                    if (event.code === "KeyM") {
+                        muteMusic = !muteMusic;
+
+                        if (muteMusic) {
+                            music.pause();
+                        } else {
+                            music.play();
+                        }
+                    }
+
+                    if (['a', 'z', ',', '.'].includes(event.key)) {
+                        keysPressed[event.key] = true;
+
+                        if (isPaused) return;
+
+                        if (!reelNoise.playing())
+                            reelNoise.play();
+                        event.preventDefault();
+                    }
                 }
             }
-
-            if (event.code === "KeyM") {
-                muteMusic = !muteMusic;
-
-                if (muteMusic) {
-                    music.pause();
-                } else {
-                    music.play();
-                }
-            }
-
-            if (['a', 'z', ',', '.'].includes(event.key)) {
-                keysPressed[event.key] = true;
-
-                if (isPaused) return;
-
-                if (!reelNoise.playing())
-                    reelNoise.play();
-                event.preventDefault();
-            }
-        });
+        );
 
         window.addEventListener('keyup', (event) => {
-            if (gameMode <= START_PANEL || gameMode == NEXT_LEVEL) return;
+            if (gameMode <= START_PANEL || gameMode === NEXT_LEVEL) return;
 
             if (isPaused) return;
 

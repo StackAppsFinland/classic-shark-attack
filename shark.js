@@ -1,7 +1,7 @@
 import NetEatingEffect from "./netEatingEffect.js";
 
 class Shark {
-    constructor(netGrid, netEatingContainer, imageLoader, playerSprite, gridCountX, gridCountY, speed, chompSound) {
+    constructor(netGrid, netEatingContainer, imageLoader, playerSprite, gridCountX, gridCountY, speed, chompSound, eatDelay) {
         this.netGrid = netGrid;
         this.netEatingContainer = netEatingContainer;
         this.directions = [
@@ -19,25 +19,35 @@ class Shark {
         this.sharkImageCounter = 1;
         this.speed = speed;
         this.imageLoader = imageLoader;
-        this.sharkSprite = this.createSharkSprite();
-        this.setInitialRotation()
         this.imageUpdateInterval = 50;
-        this.scheduleImageUpdate();
-        this.netEatingDelay = Date.now() + 10000;
+        this.netEatingDelay = Date.now() + eatDelay;
         this.angryCounter = 0;
         this.changeDirectionCooldown = 0;
         this.chompSound = chompSound;
+        this.imageUpdateTimeout = null;
+        this.sharkSprite = this.createSharkSprite();
+        this.setInitialRotation();
+        this.scheduleImageUpdate();
     }
 
     scheduleImageUpdate() {
-        setTimeout(() => {
+        this.imageUpdateTimeout = setTimeout(() => {
             this.updateSharkImage();
             this.scheduleImageUpdate();
         }, this.imageUpdateInterval);
     }
 
     setNetEatingDelay(delay) {
-        this.netEatingDelay = Date.now() + delay
+        if (this.netEatingDelay - Date.now() < delay) {
+            this.netEatingDelay += 500;
+            if (this.netEatingDelay - Date.now() > delay) {
+                this.netEatingDelay = Date.now() + delay;
+            }
+        }
+    }
+
+    destroy() {
+        clearTimeout(this.imageUpdateTimeout);
     }
 
     updateSharkImage() {
@@ -46,11 +56,10 @@ class Shark {
             this.sharkImageCounter = 1;
         }
 
-        const texture = this.imageLoader.getImage(`shark${this.sharkImageCounter}`);
-        this.sharkSprite.texture = texture;
+        this.sharkSprite.texture = this.imageLoader.getImage(`shark${this.sharkImageCounter}`);
     }
 
-    createSharkSprite(imageLoader) {
+    createSharkSprite() {
         const texture = this.imageLoader.getImage("shark1");
         const sharkSprite = new PIXI.Sprite(texture);
         sharkSprite.anchor.set(0.5, 0.25);
@@ -60,6 +69,7 @@ class Shark {
         const gridY = Math.floor(Math.random() * (this.gridCountY - 1));
         sharkSprite.x = 14 + (gridX * this.gridSize + this.gridSize / 2);
         sharkSprite.y = 14 + (gridY * this.gridSize + this.gridSize / 2);
+        sharkSprite.instance = this;
         return sharkSprite;
     }
 

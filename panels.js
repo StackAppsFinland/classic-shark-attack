@@ -23,7 +23,7 @@ class Panels {
         });
     }
 
-    showCrashedPanel(callback) {
+    showRetryPanel(callback) {
         // Set the initial alpha of the retryContainer to 0 (invisible)
         this.retryContainer.alpha = 0;
 
@@ -57,12 +57,12 @@ class Panels {
         this.pausedContainer.visible = true;
     }
 
-    hideCrashedPanel() {
+    hideRetryPanel() {
         // Fade out the retryContainer using GSAP with a 1-second delay
         gsap.to(this.retryContainer, {
             alpha: 0, // Target alpha value
-            duration: 1.0, // Animation duration in seconds
-            delay: 0.5 // Delay before starting the animation in seconds
+            duration: 0.25, // Animation duration in seconds
+            delay: 0.25 // Delay before starting the animation in seconds
         });
     }
 
@@ -71,7 +71,7 @@ class Panels {
         gsap.to(this.nextLevelContainer, {
             alpha: 0, // Target alpha value
             duration: 0.25, // Animation duration in seconds
-            delay: 0.1 // Delay before starting the animation in seconds
+            delay: 0.25 // Delay before starting the animation in seconds
         });
     }
 
@@ -186,7 +186,7 @@ class Panels {
             dropShadowColor: 0x000000,
             dropShadowDistance: 3,
         });
-        const crashText = new PIXI.Text('YOU CRASHED!', crashStyle);
+        const crashText = new PIXI.Text('YOU WERE EATEN!', crashStyle);
         crashText.anchor.set(0.5);
         crashText.x = this.canvasWidth / 2;
         crashText.y = 250;
