@@ -1,6 +1,6 @@
 import { destroyChildren } from './utils.js';
 
-class NetEatingEffect {
+class SharkEatOctopus {
     constructor(x, y, duration, numParticles, speedMultiplier) {
         this.x = x;
         this.y = y;
@@ -8,8 +8,8 @@ class NetEatingEffect {
         this.numParticles = numParticles;
         this.container = new PIXI.Container();
         this.isFinished = false;
-        this.vxSpeed = 0.35 * speedMultiplier;
-        this.vySpeed = 0.35 * speedMultiplier;
+        this.vxSpeed = 1.45 * speedMultiplier;
+        this.vySpeed = 1.45 * speedMultiplier;
         this.rotationSpeed = 0.06 * speedMultiplier;
         this.rotationStart = this.rotationSpeed / 2;
         this.speedMultiplier = speedMultiplier;
@@ -18,12 +18,12 @@ class NetEatingEffect {
 
     createParticles() {
         for (let i = 0; i < this.numParticles; i++) {
-            const thickness = 1;
-            const length = Math.floor(Math.random() * 7) + 1;
+            const thickness = 3;
+            const length = 3;
 
             // Create a black rectangle
             const rectangle = new PIXI.Graphics();
-            rectangle.beginFill(0xCFCF00);
+            rectangle.beginFill(0xFF0000);
             rectangle.drawRect(0, 0, thickness, length);
             rectangle.endFill();
 
@@ -49,10 +49,10 @@ class NetEatingEffect {
             const particle = this.container.children[i];
             particle.x += particle.vx;
             particle.y += particle.vy;
-            particle.alpha = particle.alpha - 0.003 * this.speedMultiplier;
+            particle.alpha = particle.alpha - 0.005 * this.speedMultiplier;
             particle.rotation += particle.rotationSpeed;
         }
     }
 }
 
-export default NetEatingEffect;
+export default SharkEatOctopus;

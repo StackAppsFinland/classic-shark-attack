@@ -40,6 +40,11 @@ function sharkAttack(imageLoader) {
         volume: 0.3
     });
 
+    const chomp2 = new Howl({
+        src: ['sounds/chomp2.wav'],
+        volume: 1.0
+    });
+
     const reelNoise = new Howl({
         src: ['sounds/reel.wav'],
         loop: true,
@@ -157,6 +162,15 @@ function sharkAttack(imageLoader) {
                     }
                 }
             }
+
+            for (const octopus of octopusContainer.children) {
+                if (checkPlayerToOctopusCollision(player, octopus)) {
+                    const waterSplashEffect = new WaterSplashEffect(player.x, player.y, 3000, 600, 1.0);
+                    playerSplash.play();
+                    waterSplashContainer.addChild(waterSplashEffect.container);
+                    gameMode = PLAYER_DEAD;
+                }
+            }
             updateProgressBar();
         }
 
@@ -195,7 +209,8 @@ function sharkAttack(imageLoader) {
         updateScoreDisplay();
         let speed = currentLevel.speed;
         for (let i = 0; i < currentLevel.sharks; i++) {
-            const shark = new Shark(netGrid, netEatenContainer, imageLoader, player, gridCountX, gridCountY, currentLevel.speed, chomp, currentLevel.eatNetAfter);
+            const shark = new Shark(netGrid, netEatenContainer, octopusContainer, imageLoader, player,
+                gridCountX, gridCountY, currentLevel.speed, chomp, chomp2, currentLevel.eatNetAfter);
             speed += 0.05;
             sharkContainer.addChild(shark.sharkSprite);
         }
@@ -211,7 +226,7 @@ function sharkAttack(imageLoader) {
 
                 for (let j = 0; j < octopusContainer.children.length; j++) {
                     const existingOctopus = octopusContainer.children[j];
-                    if (existingOctopus.x === 7 + (gridX * 28 + 14) && existingOctopus.y === 5 + (gridY * 28 + 14)) {
+                    if (existingOctopus.x === 6 + (gridX * 28 + 14) && existingOctopus.y === 6 + (gridY * 28 + 14)) {
                         isOccupied = true;
                         break;
                     }
@@ -220,6 +235,8 @@ function sharkAttack(imageLoader) {
 
             const octopus = new Octopus(imageLoader, gridX, gridY);
             octopusContainer.addChild(octopus.octopusSprite);
+            const sprite = octopus.octopusSprite;
+            netGrid[gridX][gridY] = {sprite, isNet: false};
         }
 
         setInitialPlayerPosition();
@@ -262,6 +279,17 @@ function sharkAttack(imageLoader) {
         const distance = Math.sqrt(dx * dx + dy * dy);
         const minDistance = (player.width / 2) + (shark.width / 2);
 
+        return false
+        return distance < minDistance;
+    }
+
+    function checkPlayerToOctopusCollision(player, shark) {
+        const dx = player.x - shark.x;
+        const dy = player.y - shark.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const minDistance = (player.width / 2) + (shark.width / 2) - 4.0;
+
+        return false;
         return distance < minDistance;
     }
 
@@ -360,7 +388,7 @@ function sharkAttack(imageLoader) {
             sprite.width = 28;
             sprite.height = 28;
             netContainer.addChild(sprite);
-            netGrid[x][y] = {sprite, imageId: imageId};
+            netGrid[x][y] = {sprite, imageId: imageId, isNet: true};
 
             if (direction === "0100") previousDirection = "0001"
             if (direction === "0001") previousDirection = "0100"
@@ -371,6 +399,7 @@ function sharkAttack(imageLoader) {
                 shark.instance.setNetEatingDelay(currentLevel.eatNetAfter);
             });
         } else {
+            if (!netGrid[x][y].isNet) return;
             const currentImageId = netGrid[x][y].imageId;
             if (direction === "0100") previousDirection = "0101"
             if (direction === "0001") previousDirection = "0101"
@@ -416,7 +445,7 @@ function sharkAttack(imageLoader) {
         currentGridX = Math.max(0, Math.min(gridCountX - 1, currentGridX));
         currentGridY = Math.max(0, Math.min(gridCountY - 1, currentGridY));
 
-        if (netGrid[currentGridX][currentGridY] !== null) {
+        if (netGrid[currentGridX][currentGridY] !== null && netGrid[currentGridX][currentGridY].isNet) {
             let oppositeDir = "0000"
             if (direction === "0100") oppositeDir = "0001"
             if (direction === "0001") oppositeDir = "0100"
@@ -611,7 +640,7 @@ function sharkAttack(imageLoader) {
 
         for (let x = 0; x < netGrid.length; x++) {
             for (let y = 0; y < netGrid[x].length; y++) {
-                if (netGrid[x][y] !== null) {
+                if (netGrid[x][y] !== null && netGrid[x][y].isNet) {
                     nonNullCount++;
                 }
             }

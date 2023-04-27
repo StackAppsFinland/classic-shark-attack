@@ -21,8 +21,8 @@ class Octopus {
         octopusSprite.anchor.set(0.5, 0.5);
         octopusSprite.width = 39;
         octopusSprite.height = 39;
-        octopusSprite.x =  7 + (this.gridX * this.gridSize + this.gridSize / 2);
-        octopusSprite.y = 5 + (this.gridY * this.gridSize + this.gridSize / 2);
+        octopusSprite.x =  6 + (this.gridX * this.gridSize + this.gridSize / 2);
+        octopusSprite.y = 6 + (this.gridY * this.gridSize + this.gridSize / 2);
         octopusSprite.instance = this;
         return octopusSprite;
     }
