@@ -8,8 +8,8 @@ class SharkEatOctopus {
         this.numParticles = numParticles;
         this.container = new PIXI.Container();
         this.isFinished = false;
-        this.vxSpeed = 1.45 * speedMultiplier;
-        this.vySpeed = 1.45 * speedMultiplier;
+        this.vxSpeed = 1.0 * speedMultiplier;
+        this.vySpeed = 1.0 * speedMultiplier;
         this.rotationSpeed = 0.06 * speedMultiplier;
         this.rotationStart = this.rotationSpeed / 2;
         this.speedMultiplier = speedMultiplier;
@@ -29,8 +29,8 @@ class SharkEatOctopus {
 
             rectangle.x = this.x;
             rectangle.y = this.y;
-            rectangle.vx = (Math.random() * 2 - 1) * this.vxSpeed;
-            rectangle.vy = (Math.random() * 2 - 1) * this.vySpeed;
+            rectangle.vx = (Math.random() * 4 - 1) * this.vxSpeed;
+            rectangle.vy = (Math.random() * 4 - 1) * this.vySpeed;
             rectangle.alpha = 1;
             rectangle.rotation = Math.floor(Math.random() * 360);
             rectangle.rotationSpeed = (Math.random() * this.rotationSpeed - this.rotationStart);
@@ -49,7 +49,7 @@ class SharkEatOctopus {
             const particle = this.container.children[i];
             particle.x += particle.vx;
             particle.y += particle.vy;
-            particle.alpha = particle.alpha - 0.005 * this.speedMultiplier;
+            particle.alpha = particle.alpha - 0.02 * this.speedMultiplier;
             particle.rotation += particle.rotationSpeed;
         }
     }

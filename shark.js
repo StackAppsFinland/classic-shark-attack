@@ -20,15 +20,18 @@ class Shark {
         this.gridSize = 28;
         this.sharkImageCounter = 1;
         this.speed = speed;
+        this.originalSpeed = speed;
+        this.superSpeed = speed * 2.0;
         this.imageLoader = imageLoader;
         this.imageUpdateInterval = 50;
         this.netEatingDelay = Date.now() + eatDelay;
         this.angryCounter = 0;
-        this.changeDirectionCooldown = 0;
+        this.changeDirectionCooldown = Math.floor(Math.random() * (1000 - 100 + 1)) + 100;
         this.chompSound = chompSound;
         this.octoChompSound = octoChompSound;
         this.imageUpdateTimeout = null;
         this.sharkSprite = this.createSharkSprite();
+        this.alignToGrid();
         this.setInitialRotation();
         this.scheduleImageUpdate();
     }
@@ -105,9 +108,14 @@ class Shark {
         const gridX = Math.floor(newX / this.gridSize);
         const gridY = Math.floor(newY / this.gridSize);
 
-        if ((newX < 5  || gridX >= this.gridCountX) || (newY < 5 || gridY >= this.gridCountY) || Math.floor(Math.random() * 2000) < 5) {
+        // check for edges of screen
+        if (newX < 10  || gridX >= this.gridCountX ||
+            newY < 10 || gridY >= this.gridCountY ||
+            this.changeDirectionCooldown == 0) {
             this.alignToGrid();
             this.changeDirection();
+            console.log("here")
+            this.changeDirectionCooldown = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
             return;
         }
 
@@ -144,53 +152,57 @@ class Shark {
                 rotation: targetRotation,
                 duration: 0.2,
             });
-            this.changeDirectionCooldown = 1000;
+            this.changeDirectionCooldown = 100;
+            return;
+        }
+
+        if (this.netGrid[gridX][gridY] && this.netGrid[gridX][gridY].isNet === false) {
+            if (Math.floor(Math.random() * 100) < 10) {
+                this.alignToGrid();
+                this.changeDirection();
+                return;
+            }
+
+            this.octopusContainer.removeChild(this.netGrid[gridX][gridY].sprite)
+            this.netGrid[gridX][gridY] = null
+            if (!this.octoChompSound.playing()) this.octoChompSound.play();
+            const sharkEatOctopus = new SharkEatOctopus((gridX * 28) + 14, (gridY * 28) + 14, 1000, 250, 2.0);
+            this.netEatingContainer.addChild(sharkEatOctopus.container);
+            this.speed = this.superSpeed;
+            this.angryCounter = 5000;
+            this.changeDirectionCooldown = 100;
             return;
         }
 
         if (this.netGrid[gridX][gridY] === null || Date.now() > this.netEatingDelay) {
             if (this.netGrid[gridX][gridY] !== null) {
-                if (this.netGrid[gridX][gridY].isNet === false) {
-                    if (Math.floor(Math.random() * 10) < 7) {
-                        this.alignToGrid();
-                        this.changeDirection();
-                        return;
-                    }
+                const parentContainer = this.netGrid[gridX][gridY].sprite.parent;
+                parentContainer.removeChild(this.netGrid[gridX][gridY].sprite)
+                this.netGrid[gridX][gridY] = null
 
-                    this.octopusContainer.removeChild(this.netGrid[gridX][gridY].sprite)
-                    this.netGrid[gridX][gridY] = null
-                    if (!this.octoChompSound.playing()) this.octoChompSound.play();
-                    const sharkEatOctopus = new SharkEatOctopus((gridX * 28) + 14, (gridY * 28) + 14, 1000, 250, 2.0);
-                    this.netEatingContainer.addChild(sharkEatOctopus.container);
-                } else {
-                    const parentContainer = this.netGrid[gridX][gridY].sprite.parent;
-                    parentContainer.removeChild(this.netGrid[gridX][gridY].sprite)
-                    this.netGrid[gridX][gridY] = null
+                if (!this.chompSound.playing()) this.chompSound.play();
 
-                    if (!this.chompSound.playing()) this.chompSound.play();
-
-                    let offsetX = 0;
-                    let offsetY = 0;
-                    if (this.direction.y === -1) {
-                        offsetX = 20;
-                        offsetY = 8;
-                    }
-                    if (this.direction.y === 1) {
-                        offsetX = 20;
-                        offsetY = 14;
-                    }
-                    if (this.direction.x === 1) {
-                        offsetX = 18;
-                        offsetY = 18;
-                    }
-                    if (this.direction.x === -1) {
-                        offsetX = 12;
-                        offsetY = 18;
-                    }
-
-                    const netEatingEffect = new NetEatingEffect((gridX * 28) + offsetX, (gridY * 28) + offsetY, 280, 25, 1.0);
-                    this.netEatingContainer.addChild(netEatingEffect.container);
+                let offsetX = 0;
+                let offsetY = 0;
+                if (this.direction.y === -1) {
+                    offsetX = 20;
+                    offsetY = 8;
                 }
+                if (this.direction.y === 1) {
+                    offsetX = 20;
+                    offsetY = 14;
+                }
+                if (this.direction.x === 1) {
+                    offsetX = 18;
+                    offsetY = 18;
+                }
+                if (this.direction.x === -1) {
+                    offsetX = 12;
+                    offsetY = 18;
+                }
+
+                const netEatingEffect = new NetEatingEffect((gridX * 28) + offsetX, (gridY * 28) + offsetY, 280, 25, 2.0);
+                this.netEatingContainer.addChild(netEatingEffect.container);
             }
             this.move(newX, newY);
         } else {
@@ -209,6 +221,11 @@ class Shark {
 
     changeDirection() {
         let availableDirections = this.directions.filter(dir => {
+            // Skip the current direction
+            if (dir.x === this.direction.x && dir.y === this.direction.y) {
+                return false;
+            }
+
             const newX = this.sharkSprite.x + dir.x * this.gridSize;
             const newY = this.sharkSprite.y + dir.y * this.gridSize;
             const gridX = Math.floor(newX / this.gridSize);
@@ -225,7 +242,7 @@ class Shark {
                 return true;
             }
 
-            return this.netGrid[gridX][gridY] === null  || Date.now() > this.netEatingDelay;
+            return this.netGrid[gridX][gridY] === null || Date.now() > this.netEatingDelay;
         });
 
         if (availableDirections.length > 0) {
@@ -239,6 +256,7 @@ class Shark {
             });
         }
     }
+
 
 
     directionToRotation(direction) {

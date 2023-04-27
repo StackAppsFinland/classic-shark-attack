@@ -1,16 +1,29 @@
 import GameLevel from './gameLevel.js';
 
+/* const levels = [
+    new GameLevel(1, 2, 0, 1, 3, 3000),
+    new GameLevel(2, 3, 2, 1.1, 50, 2750),
+    new GameLevel(3, 4, 3, 1.2, 60, 2500),
+    new GameLevel(4, 5, 4, 1.3, 70, 2250),
+    new GameLevel(5, 6, 5, 1.4, 75, 2000),
+    new GameLevel(6, 7, 6, 1.5, 75, 1750),
+    new GameLevel(7, 8, 7, 1.6, 80, 1500),
+    new GameLevel(8, 9, 8, 1.7, 80, 1250),
+    new GameLevel(9, 10, 9, 1.8, 80, 1000),
+    new GameLevel(10, 11, 10, 1.9, 80, 750)
+]; */
+
 const levels = [
-    new GameLevel(1, 2, 0, 1, 25, 4000),
-    new GameLevel(2, 4, 0, 1, 50, 3500),
-    new GameLevel(3, 4, 0, 1.3, 60, 2500),
-    new GameLevel(4, 6, 0, 1, 70, 2500),
-    new GameLevel(5, 6, 0, 1.3, 75, 2200),
-    new GameLevel(6, 6, 2, 1.3, 75, 2000),
-    new GameLevel(7, 8, 4, 1.3, 80, 1800),
-    new GameLevel(8, 8, 6, 1.5, 80, 1600),
-    new GameLevel(9, 8, 8, 1.5, 80, 1300),
-    new GameLevel(10, 8, 8, 1.7, 80, 1000)
+    new GameLevel(1, 2, 1, 1, 70, 3000),
+    new GameLevel(2, 3, 2, 1.1, 2, 2750),
+    new GameLevel(3, 4, 3, 1.2, 2, 2500),
+    new GameLevel(4, 5, 4, 1.3, 2, 2250),
+    new GameLevel(5, 6, 5, 1.4, 2, 2000),
+    new GameLevel(6, 7, 6, 1.5, 2, 1750),
+    new GameLevel(7, 8, 7, 1.6, 2, 1500),
+    new GameLevel(8, 9, 8, 1.7, 2, 1250),
+    new GameLevel(9, 10, 9, 1.8, 2, 1000),
+    new GameLevel(10, 11, 10, 1.9, 2, 750)
 ];
 
 export default levels;

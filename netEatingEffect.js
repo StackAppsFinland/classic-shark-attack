@@ -8,8 +8,8 @@ class NetEatingEffect {
         this.numParticles = numParticles;
         this.container = new PIXI.Container();
         this.isFinished = false;
-        this.vxSpeed = 0.35 * speedMultiplier;
-        this.vySpeed = 0.35 * speedMultiplier;
+        this.vxSpeed = 0.55 * speedMultiplier;
+        this.vySpeed = 0.55 * speedMultiplier;
         this.rotationSpeed = 0.06 * speedMultiplier;
         this.rotationStart = this.rotationSpeed / 2;
         this.speedMultiplier = speedMultiplier;
@@ -49,7 +49,7 @@ class NetEatingEffect {
             const particle = this.container.children[i];
             particle.x += particle.vx;
             particle.y += particle.vy;
-            particle.alpha = particle.alpha - 0.003 * this.speedMultiplier;
+            particle.alpha = particle.alpha - 0.001 * this.speedMultiplier;
             particle.rotation += particle.rotationSpeed;
         }
     }

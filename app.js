@@ -152,7 +152,6 @@ function sharkAttack(imageLoader) {
 
             for (const shark of sharkContainer.children) {
                 shark.instance.update();
-
                 if (checkCollision(player, shark)) {
                     if (waterSplashContainer.children.length === 0) {
                         const waterSplashEffect = new WaterSplashEffect(player.x, player.y, 3000, 600, 1.0);
