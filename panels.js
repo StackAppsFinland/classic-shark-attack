@@ -11,7 +11,7 @@ class Panels {
         this.getReadyContainer = new PIXI.Container();
     }
 
-    showBeginGamePanel() {
+    showBeginGamePanel(callback) {
         // Set the initial alpha of the retryContainer to 0 (invisible)
         this.beginGameContainer.alpha = 0;
 
@@ -19,7 +19,8 @@ class Panels {
         gsap.to(this.beginGameContainer, {
             alpha: 1, // Target alpha value
             duration: 0.0, // Animation duration in seconds
-            delay: 1.5 // Delay before starting the animation in seconds
+            delay: 1.0, // Delay before starting the animation in seconds
+            onComplete: callback // Function to call when the animation is completed
         });
     }
 
@@ -31,7 +32,7 @@ class Panels {
         gsap.to(this.retryContainer, {
             alpha: 1, // Target alpha value
             duration: 0.5, // Animation duration in seconds
-            delay: 1.5, // Delay before starting the animation in seconds
+            delay: 1.0, // Delay before starting the animation in seconds
             onComplete: callback, // Function to call when the animation is completed
         });
     }
@@ -57,35 +58,34 @@ class Panels {
         this.pausedContainer.visible = true;
     }
 
-    hideRetryPanel() {
+    hideRetryPanel(callback) {
         // Fade out the retryContainer using GSAP with a 1-second delay
         gsap.to(this.retryContainer, {
             alpha: 0, // Target alpha value
             duration: 0.25, // Animation duration in seconds
-            delay: 0.25 // Delay before starting the animation in seconds
+            delay: 0.25, // Delay before starting the animation in seconds
+            onComplete: callback
         });
     }
 
-    hideNextLevelPanel() {
+    hideNextLevelPanel(callback) {
         // Fade out the retryContainer using GSAP with a 1-second delay
         gsap.to(this.nextLevelContainer, {
             alpha: 0, // Target alpha value
             duration: 0.25, // Animation duration in seconds
-            delay: 0.25 // Delay before starting the animation in seconds
+            delay: 0.25, // Delay before starting the animation in seconds
+            onComplete: callback
         });
     }
 
-    hideBeginGameContainer() {
+    hideBeginGameContainer(callback) {
         // Fade out the retryContainer using GSAP with a 1-second delay
         gsap.to(this.beginGameContainer, {
             alpha: 0, // Target alpha value
             duration: 0.25, // Animation duration in seconds
-            delay: 0.25 // Delay before starting the animation in seconds
+            delay: 0.25, // Delay before starting the animation in seconds
+            onComplete: callback
         });
-    }
-
-    onFadeInComplete() {
-        aircraft.setFlightMode(Const.RESTART)
     }
 
     getPauseContainer() {

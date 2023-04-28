@@ -51,13 +51,24 @@ function sharkAttack(imageLoader) {
         volume: 0.5
     });
 
-    const music = new Howl({
-        src: ['./sounds/music.mp3'],
-        loop: true,
-        volume: 0.1, // Set the volume to a low level (0.1)
-    });
+    const tracks = ['sounds/track1.mp3', 'sounds/track2.mp3', 'sounds/track3.mp3', 'sounds/track4.mp3'];
 
-    music.play();
+// Initialize a counter to keep track of the current track
+    let currentTrack = 0;
+
+    // Create a new Howl instance for each track
+    const music = tracks.map(track => new Howl({
+        src: [track],
+        loop: false,
+        autoplay: false,
+        preload: true,
+        volume: 0.1
+    }));
+
+    music[currentTrack].on('end', () => {
+        currentTrack = (currentTrack + 1) % music.length;
+        music[currentTrack].play();
+    });
 
     const INITIALIZE_GAME = 0;
     const START_PANEL = 1;
@@ -152,12 +163,13 @@ function sharkAttack(imageLoader) {
 
             for (const shark of sharkContainer.children) {
                 shark.instance.update();
-                if (checkCollision(player, shark)) {
+                if (checkSharkToPlayerCollision(player, shark)) {
                     if (waterSplashContainer.children.length === 0) {
                         const waterSplashEffect = new WaterSplashEffect(player.x, player.y, 3000, 600, 1.0);
                         playerSplash.play();
                         waterSplashContainer.addChild(waterSplashEffect.container);
                         gameMode = PLAYER_DEAD;
+                        music[currentTrack].pause();
                     }
                 }
             }
@@ -168,6 +180,7 @@ function sharkAttack(imageLoader) {
                     playerSplash.play();
                     waterSplashContainer.addChild(waterSplashEffect.container);
                     gameMode = PLAYER_DEAD;
+                    music[currentTrack].pause();
                 }
             }
             updateProgressBar();
@@ -181,6 +194,7 @@ function sharkAttack(imageLoader) {
         isPaused = true;
         setTimeout(() => {
             isPaused = false;
+            music[currentTrack].play();
             gameLoop()
         }, 3000); // Pause for 3 seconds (3000 milliseconds)
     }
@@ -263,22 +277,21 @@ function sharkAttack(imageLoader) {
             if (effect.isFinished) {
                 waterSplashContainer.children[i].destroy()
                 waterSplashContainer.removeChild(netEatenContainer.children[i]);
-                music.pause()
+                music[currentTrack].pause();
                 if (gameMode === PLAYER_DEAD) {
-                    gameMode = RETRY_LEVEL;
-                    panels.showRetryPanel()
+                    panels.showRetryPanel(() => {
+                        gameMode = RETRY_LEVEL;
+                    })
                 }
             }
         }
     }
 
-    function checkCollision(player, shark) {
+    function checkSharkToPlayerCollision(player, shark) {
         const dx = player.x - shark.x;
         const dy = player.y - shark.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const minDistance = (player.width / 2) + (shark.width / 2);
-
-        return false
         return distance < minDistance;
     }
 
@@ -287,8 +300,6 @@ function sharkAttack(imageLoader) {
         const dy = player.y - shark.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         const minDistance = (player.width / 2) + (shark.width / 2) - 4.0;
-
-        return false;
         return distance < minDistance;
     }
 
@@ -373,8 +384,7 @@ function sharkAttack(imageLoader) {
     };
 
     function performanceTestReady() {
-        panels.showBeginGamePanel();
-        gameMode = START_PANEL;
+        panels.showBeginGamePanel(() => gameMode = START_PANEL);
     }
 
     function drawTrailImage(x, y, direction) {
@@ -477,9 +487,10 @@ function sharkAttack(imageLoader) {
                     if (event.code === 'KeyR') {
                         resetGame();
                         gameMode = GAME_RUNNING;
-                        panels.hideRetryPanel();
-                        panels.showGetReadyPanel();
-                        delayStartGameLoop();
+                        panels.hideRetryPanel(() => {
+                            panels.showGetReadyPanel();
+                            delayStartGameLoop();
+                        });
                     }
 
                     return;
@@ -494,9 +505,10 @@ function sharkAttack(imageLoader) {
 
                         resetGame();
                         gameMode = GAME_RUNNING;
-                        panels.hideNextLevelPanel();
-                        panels.showGetReadyPanel();
-                        delayStartGameLoop();
+                        panels.hideNextLevelPanel(() => {
+                            panels.showGetReadyPanel();
+                            delayStartGameLoop();
+                        });
                     }
 
                     return;
@@ -510,19 +522,22 @@ function sharkAttack(imageLoader) {
                         }
 
                         gameMode = GAME_RUNNING;
-                        panels.hideBeginGameContainer();
-                        resetGame();
-                        panels.showGetReadyPanel();
-                        delayStartGameLoop();
+                        panels.hideBeginGameContainer(() => {
+                            resetGame();
+                            panels.showGetReadyPanel();
+                            delayStartGameLoop();
+                        });
                     }
 
                     if (event.code === 'KeyN' && currentScore.level > 1) {
                         currentScore.reset();
                         currentScore.level = 1;
-                        resetGame();
-                        panels.hideBeginGameContainer();
-                        panels.showGetReadyPanel();
-                        delayStartGameLoop();
+
+                        panels.hideBeginGameContainer(() => {
+                            resetGame();
+                            panels.showGetReadyPanel();
+                            delayStartGameLoop();
+                        });
                     }
                     return;
                 }
@@ -530,13 +545,15 @@ function sharkAttack(imageLoader) {
                 if (gameMode === GAME_RUNNING) {
                     if (event.code === "KeyP") {
                         if (isPaused) {
-                            panels.hidePauseContainer();
-                            isPaused = false;
-                            Howler.mute(false);
+                            panels.hidePauseContainer(() => {
+                                isPaused = false;
+                                Howler.mute(false);
+                            });
                         } else {
-                            panels.showPauseContainer();
-                            isPaused = true;
-                            Howler.mute(true);
+                            panels.showPauseContainer(() => {
+                                isPaused = true;
+                                Howler.mute(true);
+                            });
                         }
                     }
 
@@ -650,11 +667,13 @@ function sharkAttack(imageLoader) {
         progressBarPercentage = Math.min(Math.max(progressBarPercentage, 0), 100);
 
         if (progressBarPercentage === 100) {
+            if (isPaused) return;
+            isPaused = true;
+            music[currentTrack].pause();
             screenFlash.flash()
             tada.play();
-            gameMode = NEXT_LEVEL;
-            panels.showNextLevelPanel();
             reelNoise.stop();
+            panels.showNextLevelPanel(() => gameMode = NEXT_LEVEL);
             return;
         }
         progressBar.setPercentage(progressBarPercentage)

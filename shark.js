@@ -21,7 +21,7 @@ class Shark {
         this.sharkImageCounter = 1;
         this.speed = speed;
         this.originalSpeed = speed;
-        this.superSpeed = speed * 2.0;
+        this.superSpeed = speed * 1.5;
         this.imageLoader = imageLoader;
         this.imageUpdateInterval = 50;
         this.netEatingDelay = Date.now() + eatDelay;
@@ -114,7 +114,6 @@ class Shark {
             this.changeDirectionCooldown == 0) {
             this.alignToGrid();
             this.changeDirection();
-            console.log("here")
             this.changeDirectionCooldown = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
             return;
         }
