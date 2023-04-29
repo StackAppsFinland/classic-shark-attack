@@ -31,7 +31,7 @@ function sharkAttack(imageLoader) {
 
     const tada = new Howl({
         src: ['sounds/tada.mp3'],
-        volume: 1.0
+        volume: 0.5
     });
 
 
@@ -48,7 +48,7 @@ function sharkAttack(imageLoader) {
     const reelNoise = new Howl({
         src: ['sounds/reel.wav'],
         loop: true,
-        volume: 0.5
+        volume: 0.25
     });
 
     const tracks = ['sounds/track1.mp3', 'sounds/track2.mp3', 'sounds/track3.mp3', 'sounds/track4.mp3'];
@@ -62,7 +62,7 @@ function sharkAttack(imageLoader) {
         loop: false,
         autoplay: false,
         preload: true,
-        volume: 0.1
+        volume: 0.4
     }));
 
     music[currentTrack].on('end', () => {
@@ -131,7 +131,7 @@ function sharkAttack(imageLoader) {
     const progressBar = new ProgressBar(400, 634);
     app.stage.addChild(progressBar.container);
     const panels = new Panels(app.screen.width, app.screen.height);
-    app.stage.addChild(panels.getBeginGameContainer(currentScore.level));
+    app.stage.addChild(panels.getOpeningContainer(currentScore.level));
     app.stage.addChild(panels.getRetryContainer());
     app.stage.addChild(panels.getNextLevelContainer());
     app.stage.addChild(panels.getPauseContainer());
@@ -140,7 +140,9 @@ function sharkAttack(imageLoader) {
 
     // Define the game loop
     function gameLoop() {
-        if (isPaused) return
+        if (isPaused) {
+            return;
+        }
 
         if (gameMode !== GAME_RUNNING && gameMode !== PLAYER_DEAD) return;
 
@@ -384,7 +386,7 @@ function sharkAttack(imageLoader) {
     };
 
     function performanceTestReady() {
-        panels.showBeginGamePanel(() => gameMode = START_PANEL);
+        panels.showOpeningPanel(() => gameMode = START_PANEL);
     }
 
     function drawTrailImage(x, y, direction) {
@@ -522,7 +524,7 @@ function sharkAttack(imageLoader) {
                         }
 
                         gameMode = GAME_RUNNING;
-                        panels.hideBeginGameContainer(() => {
+                        panels.hideOpeningContainer(() => {
                             resetGame();
                             panels.showGetReadyPanel();
                             delayStartGameLoop();
@@ -533,7 +535,7 @@ function sharkAttack(imageLoader) {
                         currentScore.reset();
                         currentScore.level = 1;
 
-                        panels.hideBeginGameContainer(() => {
+                        panels.hideOpeningContainer(() => {
                             resetGame();
                             panels.showGetReadyPanel();
                             delayStartGameLoop();
@@ -544,16 +546,16 @@ function sharkAttack(imageLoader) {
 
                 if (gameMode === GAME_RUNNING) {
                     if (event.code === "KeyP") {
+
                         if (isPaused) {
-                            panels.hidePauseContainer(() => {
-                                isPaused = false;
-                                Howler.mute(false);
-                            });
+                            panels.hidePauseContainer();
+                            isPaused = false;
+                            Howler.mute(false);
+                            gameLoop();
                         } else {
-                            panels.showPauseContainer(() => {
-                                isPaused = true;
-                                Howler.mute(true);
-                            });
+                            panels.showPauseContainer()
+                            isPaused = true;
+                            Howler.mute(true);
                         }
                     }
 
@@ -561,13 +563,13 @@ function sharkAttack(imageLoader) {
                         muteMusic = !muteMusic;
 
                         if (muteMusic) {
-                            music.pause();
+                            music[currentTrack].pause();
                         } else {
-                            music.play();
+                            music[currentTrack].play();
                         }
                     }
 
-                    if (['a', 'z', ',', '.'].includes(event.key)) {
+                    if (['a', 'z', ',', '.'].includes(event.key) && !isPaused) {
                         keysPressed[event.key] = true;
 
                         if (isPaused) return;
@@ -673,6 +675,7 @@ function sharkAttack(imageLoader) {
             screenFlash.flash()
             tada.play();
             reelNoise.stop();
+            currentScore.saveGameData();
             panels.showNextLevelPanel(() => gameMode = NEXT_LEVEL);
             return;
         }
