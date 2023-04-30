@@ -223,6 +223,7 @@ function sharkAttack(imageLoader) {
 
         netGrid = new Array(gridCountX).fill(null).map(() => new Array(gridCountY).fill(null));
         currentLevel = getCurrentLevel();
+        currentScore.resetScore();
         updateScoreDisplay();
 
         backtrackingMoves = 0;

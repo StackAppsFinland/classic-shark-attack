@@ -1,5 +1,3 @@
-import Const from "./constants.js";
-
 class Score {
     constructor() {
         this.score = 0;
@@ -30,6 +28,10 @@ class Score {
         this.highScore = parseInt(highScore);
 
         console.log("loaded level: " + this.level)
+    }
+
+    resetScore() {
+        this.score = 0;
     }
 
     reset() {
