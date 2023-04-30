@@ -1,4 +1,3 @@
-import Const from "./constants.js";
 
 class Panels {
     constructor(canvasWidth, canvasHeight) {
@@ -10,6 +9,18 @@ class Panels {
         this.nextLevelContainer = new PIXI.Container();
         this.pausedContainer = new PIXI.Container();
         this.getReadyContainer = new PIXI.Container();
+        this.scoreStyle = new PIXI.TextStyle({
+            fontFamily: 'space-font',
+            fontSize: 20,
+            fill: 'white',
+        });
+        this.score = new PIXI.Text('0', this.scoreStyle);
+        this.bonusScore = new PIXI.Text('0', this.scoreStyle);
+    }
+
+    setScoreInfo(score, bonus) {
+        this.score.text = score;
+        this.bonusScore.text = bonus;
     }
 
     showOpeningPanel(callback) {
@@ -113,8 +124,8 @@ class Panels {
         this.openingContainer.alpha = 0;
 
         // Create a semi-transparent rounded rectangle in the middle of the screen
-        const rectWidth = 600;
-        const rectHeight = 530;
+        const rectWidth = 720;
+        const rectHeight = 550;
         const rectX = (this.canvasWidth - rectWidth) / 2;
         const rectY = (this.canvasHeight - rectHeight) / 2;
 
@@ -136,13 +147,13 @@ class Panels {
         const welcomeText = new PIXI.Text('Welcome to', titleStyle);
         welcomeText.anchor.set(0.5);
         welcomeText.x = this.canvasWidth / 2;
-        welcomeText.y = 120;
+        welcomeText.y = 95;
         this.openingContainer.addChild(welcomeText);
 
         const titleText = new PIXI.Text('Classic Shark Attack!', titleStyle);
         titleText.anchor.set(0.5);
         titleText.x = this.canvasWidth / 2;
-        titleText.y = 180;
+        titleText.y = 140;
         this.openingContainer.addChild(titleText);
 
 
@@ -161,7 +172,7 @@ class Panels {
             'out, so keep an eye on them!', textStyle);
         instructionsText.anchor.set(0.5);
         instructionsText.x = this.canvasWidth / 2;
-        instructionsText.y = 350;
+        instructionsText.y = 270;
         instructionsText.style.wordWrap = true;
         instructionsText.style.wordWrapWidth = rectWidth - 50;
         this.openingContainer.addChild(instructionsText);
@@ -175,7 +186,7 @@ class Panels {
         const pressEnter = new PIXI.Text('PRESS "ENTER" TO START', textStyleRed);
         pressEnter.anchor.set(0.5);
         pressEnter.x = this.canvasWidth / 2;
-        pressEnter.y = 500;
+        pressEnter.y = 560;
         pressEnter.style.wordWrap = true;
         pressEnter.style.wordWrapWidth = rectWidth - 50;
         this.openingContainer.addChild(pressEnter);
@@ -191,10 +202,26 @@ class Panels {
         const keys = new PIXI.Text('"P" PAUSES GAME  -   "M" MUTES MUSIC ', textStyle);
         keys.anchor.set(0.5);
         keys.x = this.canvasWidth / 2;
-        keys.y = 560;
+        keys.y = 490;
         keys.style.wordWrap = true;
         keys.style.wordWrapWidth = rectWidth - 50;
         this.openingContainer.addChild(keys);
+
+        const controls1 = new PIXI.Text('CONTROL WITH JOYSTICK OR "A" - UP, "Z" - DOWN', textStyle);
+        controls1.anchor.set(0.5);
+        controls1.x = this.canvasWidth / 2;
+        controls1.y = 410;
+        controls1.style.wordWrap = true;
+        controls1.style.wordWrapWidth = rectWidth - 50;
+        this.openingContainer.addChild(controls1);
+
+        const controls2 = new PIXI.Text('LEFT ARROW OR ","   -   RIGHT ARROW OR ","', textStyle);
+        controls2.anchor.set(0.5);
+        controls2.x = this.canvasWidth / 2;
+        controls2.y = 450;
+        controls2.style.wordWrap = true;
+        controls2.style.wordWrapWidth = rectWidth - 50;
+        this.openingContainer.addChild(controls2);
 
         return this.openingContainer;
     }
@@ -346,21 +373,57 @@ class Panels {
         const crashText = new PIXI.Text('LEVEL COMPLETE!', crashStyle);
         crashText.anchor.set(0.5);
         crashText.x = this.canvasWidth / 2;
-        crashText.y = 250;
+        crashText.y = 230;
         this.nextLevelContainer.addChild(crashText);
 
         // Create the "Click 'Enter' to continue" text
-        const tryAgainStyle = new PIXI.TextStyle({
+        const nextLevelStyle = new PIXI.TextStyle({
             fontFamily: 'space-font',
             fontSize: 30,
             fill: 'white',
         });
 
-        const tryAgainText = new PIXI.Text('Press "Enter" for next level', tryAgainStyle);
-        tryAgainText.anchor.set(0.5);
-        tryAgainText.x = this.canvasWidth / 2;
-        tryAgainText.y = 370;
-        this.nextLevelContainer.addChild(tryAgainText);
+        const scoreText = new PIXI.Text('TOTAL SCORE:', this.scoreStyle);
+        scoreText.anchor.set(0.5);
+        scoreText.x = this.canvasWidth / 2;
+        scoreText.y = 330;
+        this.nextLevelContainer.addChild(scoreText);
+
+        this.score.anchor.set(0.5);
+        this.score.x = (this.canvasWidth / 2) + 100;
+        this.score.y = 330;
+        this.nextLevelContainer.addChild(this.score);
+
+        const bonusScoreText = new PIXI.Text('Backtracking bonus:', this.scoreStyle);
+        bonusScoreText.anchor.set(0.7);
+        bonusScoreText.x = this.canvasWidth / 2;
+        bonusScoreText.y = 300;
+        this.nextLevelContainer.addChild(bonusScoreText);
+
+        this.bonusScore.anchor.set(0.5);
+        this.bonusScore.x = (this.canvasWidth / 2) + 100;
+        this.bonusScore.y = 296;
+        this.nextLevelContainer.addChild(this.bonusScore);
+
+        const bonusMeaningStyle = new PIXI.TextStyle({
+            fontFamily: 'space-font',
+            fontSize: 16,
+            fill: 'white',
+        });
+
+        const bonusMeaning = new PIXI.Text('(The less times you backtracked the better)', bonusMeaningStyle);
+        bonusMeaning.anchor.set(0.5);
+        bonusMeaning.x = this.canvasWidth / 2;
+        bonusMeaning.y = 355;
+        this.nextLevelContainer.addChild(bonusMeaning);
+
+
+
+        const nextLevelText = new PIXI.Text('Press "Enter" for next level', nextLevelStyle);
+        nextLevelText.anchor.set(0.5);
+        nextLevelText.x = this.canvasWidth / 2;
+        nextLevelText.y = 400;
+        this.nextLevelContainer.addChild(nextLevelText);
 
         return this.nextLevelContainer;
     }
