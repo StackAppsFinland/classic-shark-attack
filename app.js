@@ -199,7 +199,7 @@ function sharkAttack(imageLoader) {
         setTimeout(() => {
             isPaused = false;
             music[currentTrack].play();
-            gameLoop()
+            requestAnimationFrame(gameLoop);
         }, 3000); // Pause for 3 seconds (3000 milliseconds)
     }
 
@@ -427,14 +427,12 @@ function sharkAttack(imageLoader) {
 
             backtrackingMoves++;
             totalNumberOfMoves++;
-            console.log("back " + backtrackingMoves)
             const imageId = orStrings(currentImageId, direction)
             if (imageId !== currentImageId) {
                 netGrid[x][y].sprite.texture = imageLoader.getImage("net-" + imageId);
                 netGrid[x][y].imageId = imageId;
             }
         }
-        console.log(totalNumberOfMoves)
     }
 
     function movePlayer(direction) {
@@ -563,7 +561,7 @@ function sharkAttack(imageLoader) {
                             panels.hidePauseContainer();
                             isPaused = false;
                             Howler.mute(false);
-                            gameLoop();
+                            requestAnimationFrame(gameLoop);
                         } else {
                             panels.showPauseContainer()
                             isPaused = true;

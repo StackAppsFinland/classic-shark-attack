@@ -21,7 +21,7 @@ class Shark {
         this.sharkImageCounter = 1;
         this.speed = speed;
         this.originalSpeed = speed;
-        this.superSpeed = speed * 1.5;
+        this.superSpeed = speed * 1.75;
         this.imageLoader = imageLoader;
         this.imageUpdateInterval = 50;
         this.netEatingDelay = Date.now() + eatDelay;
