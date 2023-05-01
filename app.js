@@ -133,7 +133,7 @@ function sharkAttack(imageLoader) {
     app.stage.addChild(sharkContainer);
     app.stage.addChild(octopusContainer);
     app.stage.addChild(waterSplashContainer);
-    const progressBar = new ProgressBar(400, 634);
+    const progressBar = new ProgressBar(400, 631);
     app.stage.addChild(progressBar.container);
     const panels = new Panels(app.screen.width, app.screen.height);
     app.stage.addChild(panels.getOpeningContainer(currentScore.level));
@@ -144,6 +144,7 @@ function sharkAttack(imageLoader) {
     performanceTestReady();
 
     const speedConstant = 121;
+
     app.ticker.add((delta) => {
         if (initializePerformance) {
             speedMultiplier = speedConstant * delta * (1 / 60);
@@ -243,7 +244,7 @@ function sharkAttack(imageLoader) {
         let speed = currentLevel.speed * speedMultiplier;
         for (let i = 0; i < currentLevel.sharks; i++) {
             const shark = new Shark(netGrid, netEatenContainer, octopusContainer, imageLoader, player,
-                gridCountX, gridCountY, currentLevel.speed, chomp, chomp2, currentLevel.eatNetAfter);
+                gridCountX, gridCountY, speed, chomp, chomp2, currentLevel.eatNetAfter);
             speed += 0.05;
             sharkContainer.addChild(shark.sharkSprite);
         }
@@ -632,15 +633,15 @@ function sharkAttack(imageLoader) {
 
         const scoreText = new PIXI.Text("SCORE:", scoreStyle);
         scoreText.x = 10;
-        scoreText.y = 636;
+        scoreText.y = 632;
 
         const levelText = new PIXI.Text("LEVEL:", scoreStyle);
         levelText.x = 230;
-        levelText.y = 636;
+        levelText.y = 632;
 
         const highScoreText = new PIXI.Text("HIGH SCORE:", scoreStyle);
         highScoreText.x = 620;
-        highScoreText.y = 636;
+        highScoreText.y = 632;
 
         app.stage.addChild(scoreText, levelText, highScoreText);
     }
@@ -657,15 +658,15 @@ function sharkAttack(imageLoader) {
 
         const scoreValue = new PIXI.Text("" + currentScore.score, scoreStyle);
         scoreValue.x = 86;
-        scoreValue.y = 634;
+        scoreValue.y = 631;
 
         const levelValue = new PIXI.Text("" + currentScore.level, scoreStyle);
         levelValue.x = 302;
-        levelValue.y = 634;
+        levelValue.y = 631;
 
         const highScoreValue = new PIXI.Text("" + currentScore.highScore, scoreStyle);
         highScoreValue.x = 743;
-        highScoreValue.y = 634;
+        highScoreValue.y = 631;
 
         app.stage.addChild(scoreValue, levelValue, highScoreValue);
         return {scoreValue, levelValue, highScoreValue};

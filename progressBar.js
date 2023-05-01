@@ -3,8 +3,8 @@ class ProgressBar {
         this.x = x;
         this.y = y;
         this.outerWidth = 104;
-        this.outerHeight = 20;
-        this.innerHeight = 18;
+        this.outerHeight = 18;
+        this.innerHeight = 16;
         this.innerXOffset = 2;
         this.container = new PIXI.Container();
 
