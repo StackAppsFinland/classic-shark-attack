@@ -77,6 +77,9 @@ function sharkAttack(imageLoader) {
     const PLAYER_DEAD = 4;
     const RETRY_LEVEL = 5;
 
+    let initializePerformance = true;
+    let times = 60;
+    let speedMultiplier = 0;
     const gridSize = 28;
     const gridCountX = 30;
     const gridCountY = 22;
@@ -140,8 +143,14 @@ function sharkAttack(imageLoader) {
     app.stage.addChild(panels.getGetReadyContainer())
     performanceTestReady();
 
+    const speedConstant = 121;
     app.ticker.add((delta) => {
-    // Define the game loop
+        if (initializePerformance) {
+            speedMultiplier = speedConstant * delta * (1 / 60);
+            times--;
+            if (times <= 0) initializePerformance = false;
+        }
+
         if (isPaused) {
             return;
         }
@@ -228,7 +237,7 @@ function sharkAttack(imageLoader) {
         backtrackingMoves = 0;
         totalNumberOfMoves = 0;
 
-        let speed = currentLevel.speed;
+        let speed = currentLevel.speed * speedMultiplier;
         for (let i = 0; i < currentLevel.sharks; i++) {
             const shark = new Shark(netGrid, netEatenContainer, octopusContainer, imageLoader, player,
                 gridCountX, gridCountY, currentLevel.speed, chomp, chomp2, currentLevel.eatNetAfter);
