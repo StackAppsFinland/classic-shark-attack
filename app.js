@@ -144,15 +144,11 @@ function sharkAttack(imageLoader) {
     performanceTestReady();
 
     const speedConstant = 121;
-
     app.ticker.add((delta) => {
         if (initializePerformance) {
             speedMultiplier = speedConstant * delta * (1 / 60);
             times--;
-            if (times <= 0) {
-                initializePerformance = false;
-                console.log("Speed multiplier: " + speedMultiplier);
-            }
+            if (times <= 0) initializePerformance = false;
         }
 
         if (isPaused) {

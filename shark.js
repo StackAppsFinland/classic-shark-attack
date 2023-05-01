@@ -96,6 +96,14 @@ class Shark {
         this.sharkSprite.y = 20 + Math.round((this.sharkSprite.y - 14) / this.gridSize) * this.gridSize;
     }
 
+    distanceAndInverse(x1, y1, x2, y2) {
+        const deltaX = x2 - x1;
+        const deltaY = y2 - y1;
+
+        const dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        return (dist === 0 ? Infinity : 1 / dist) * 100;
+    }
+
     update() {
         if (this.isMoving) return;
 
@@ -103,6 +111,8 @@ class Shark {
 
         const newX = this.sharkSprite.x + this.direction.x * this.speed;
         const newY = this.sharkSprite.y + this.direction.y * this.speed;
+
+        this.angryCounter += this.distanceAndInverse(newX, newY, this.playerSprite.x, this.playerSprite.y);
 
         // Check if the new position is within the grid
         const gridX = Math.floor(newX / this.gridSize);
@@ -207,7 +217,7 @@ class Shark {
         } else {
             // If net is touched, angry count goes up
             this.angryCounter = this.angryCounter + 100;
-            if (this.angryCounter > 2000) { this.angryCounter = 2000; }
+            if (this.angryCounter > 5000) { this.angryCounter = 5000; }
             this.alignToGrid();
             this.changeDirection();
         }
