@@ -1,7 +1,7 @@
 import GameLevel from './gameLevel.js';
 
  const levels = [
-    new GameLevel(1, 4, 0, 1, 40, 3000),
+    new GameLevel(1, 4, 0, 1, 4, 3000),
     new GameLevel(2, 4, 2, 1.1, 50, 2750),
     new GameLevel(3, 4, 3, 1.2, 60, 2500),
     new GameLevel(4, 4, 4, 1.3, 70, 2250),

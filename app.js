@@ -140,8 +140,8 @@ function sharkAttack(imageLoader) {
     app.stage.addChild(panels.getGetReadyContainer())
     performanceTestReady();
 
+    app.ticker.add((delta) => {
     // Define the game loop
-    function gameLoop() {
         if (isPaused) {
             return;
         }
@@ -191,15 +191,14 @@ function sharkAttack(imageLoader) {
         }
 
         updateSpecialEffects();
-        requestAnimationFrame(gameLoop);
-    }
+    })
 
     function delayStartGameLoop() {
         isPaused = true;
         setTimeout(() => {
             isPaused = false;
             music[currentTrack].play();
-            requestAnimationFrame(gameLoop);
+            app.ticker.start()
         }, 3000); // Pause for 3 seconds (3000 milliseconds)
     }
 
@@ -287,6 +286,7 @@ function sharkAttack(imageLoader) {
                 waterSplashContainer.children[i].destroy()
                 waterSplashContainer.removeChild(netEatenContainer.children[i]);
                 music[currentTrack].pause();
+                isPaused = true;
                 if (gameMode === PLAYER_DEAD) {
                     panels.showRetryPanel(() => {
                         gameMode = RETRY_LEVEL;
@@ -561,13 +561,16 @@ function sharkAttack(imageLoader) {
                             panels.hidePauseContainer();
                             isPaused = false;
                             Howler.mute(false);
-                            requestAnimationFrame(gameLoop);
+                            app.ticker.start();
                         } else {
                             panels.showPauseContainer()
                             isPaused = true;
                             Howler.mute(true);
+                            app.ticker.stop();
                         }
                     }
+
+                    if (isPaused) return;
 
                     if (event.code === "KeyM") {
                         muteMusic = !muteMusic;
