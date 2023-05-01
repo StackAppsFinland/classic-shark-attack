@@ -148,7 +148,10 @@ function sharkAttack(imageLoader) {
         if (initializePerformance) {
             speedMultiplier = speedConstant * delta * (1 / 60);
             times--;
-            if (times <= 0) initializePerformance = false;
+            if (times <= 0) {
+                initializePerformance = false;
+                console.log("Speed multiplier: " + speedMultiplier);
+            }
         }
 
         if (isPaused) {
@@ -178,7 +181,7 @@ function sharkAttack(imageLoader) {
                 shark.instance.update();
                 if (checkSharkToPlayerCollision(player, shark)) {
                     if (waterSplashContainer.children.length === 0) {
-                        const waterSplashEffect = new WaterSplashEffect(player.x, player.y, 3000, 600, 1.0);
+                        const waterSplashEffect = new WaterSplashEffect(player.x, player.y, 3000, 600, speedMultiplier);
                         playerSplash.play();
                         waterSplashContainer.addChild(waterSplashEffect.container);
                         gameMode = PLAYER_DEAD;
