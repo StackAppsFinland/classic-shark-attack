@@ -65,9 +65,11 @@ function sharkAttack(imageLoader) {
         volume: 0.4
     }));
 
-    music[currentTrack].on('end', () => {
-        currentTrack = (currentTrack + 1) % music.length;
-        music[currentTrack].play();
+    music.forEach((m, i) => {
+        m.on('end', () => {
+            currentTrack = (i + 1) % music.length;
+            music[currentTrack].play();
+        });
     });
 
     const INITIALIZE_GAME = 0;
@@ -104,7 +106,7 @@ function sharkAttack(imageLoader) {
     const app = new PIXI.Application({
         width: gridCountX * gridSize,
         height: (gridCountY + 1) * gridSize,
-        backgroundColor: 0x3030FF
+        backgroundAlpha: 0
     });
 
     gsap.registerPlugin(PixiPlugin);
@@ -127,6 +129,7 @@ function sharkAttack(imageLoader) {
     let screenFlash = new BrightnessFlash(app)
 
     playerContainer.addChild(player)
+
     app.stage.addChild(netContainer);
     app.stage.addChild(netEatenContainer);
     app.stage.addChild(playerContainer);
@@ -165,10 +168,10 @@ function sharkAttack(imageLoader) {
                 } else if (keysPressed['z']) {
                     if (previousDirection === "0000") previousDirection = "1000"
                     movePlayer('0010');
-                } else if (keysPressed[',']) {
+                } else if (keysPressed[',']  || keysPressed['ArrowLeft']) {
                     if (previousDirection === "0000") previousDirection = "0100"
                     movePlayer('0001');
-                } else if (keysPressed['.']) {
+                } else if (keysPressed['.'] || keysPressed['ArrowRight']) {
                     if (previousDirection === "0000") previousDirection = "0001"
                     movePlayer('0100');
                 }
@@ -550,7 +553,7 @@ function sharkAttack(imageLoader) {
                         });
                     }
 
-                    if (event.code === 'KeyN' && currentScore.level > 1) {
+                    if (event.code === 'KeyN') {
                         currentScore.reset();
                         currentScore.level = 1;
 
@@ -591,7 +594,7 @@ function sharkAttack(imageLoader) {
                         }
                     }
 
-                    if (['a', 'z', ',', '.'].includes(event.key) && !isPaused) {
+                    if (['a', 'z', ',', '.', 'ArrowLeft', 'ArrowRight'].includes(event.key) && !isPaused) {
                         keysPressed[event.key] = true;
 
                         if (isPaused) return;
@@ -609,7 +612,7 @@ function sharkAttack(imageLoader) {
 
             if (isPaused) return;
 
-            if (['a', 'z', ',', '.'].includes(event.key)) {
+            if (['a', 'z', ',', '.','ArrowLeft', 'ArrowRight'].includes(event.key)) {
                 keysPressed[event.key] = false;
                 reelNoise.pause();
                 event.preventDefault();

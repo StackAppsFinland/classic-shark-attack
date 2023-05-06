@@ -215,7 +215,7 @@ class Panels {
         controls1.style.wordWrapWidth = rectWidth - 50;
         this.openingContainer.addChild(controls1);
 
-        const controls2 = new PIXI.Text('LEFT ARROW OR ","   -   RIGHT ARROW OR ","', textStyle);
+        const controls2 = new PIXI.Text('LEFT ARROW OR COMMA   -   RIGHT ARROW OR FULL STOP', textStyle);
         controls2.anchor.set(0.5);
         controls2.x = this.canvasWidth / 2;
         controls2.y = 450;
