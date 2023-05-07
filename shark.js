@@ -121,7 +121,7 @@ class Shark {
         // check for edges of screen
         if (newX < 10  || gridX >= this.gridCountX ||
             newY < 10 || gridY >= this.gridCountY ||
-            this.changeDirectionCooldown == 0) {
+            this.changeDirectionCooldown === 0) {
             this.alignToGrid();
             this.changeDirection();
             this.changeDirectionCooldown = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
@@ -259,13 +259,16 @@ class Shark {
             const targetRotation = this.directionToRotation(newDirection);
             this.direction = newDirection;
 
+            const currentRotation = this.sharkSprite.rotation;
+            const shortestRotation = Math.atan2(Math.sin(targetRotation - currentRotation), Math.cos(targetRotation - currentRotation));
+            const newRotation = currentRotation + shortestRotation;
+
             gsap.to(this.sharkSprite, {
-                rotation: targetRotation,
+                rotation: newRotation,
                 duration: 0.2,
             });
         }
     }
-
 
 
     directionToRotation(direction) {
