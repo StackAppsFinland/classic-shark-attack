@@ -24,6 +24,18 @@ WebFont.load({
 });
 
 function sharkAttack(imageLoader) {
+    if (!('getGamepads' in navigator)) {
+        alert('Your browser does not support the Gamepad API');
+    }
+
+    window.addEventListener('gamepadconnected', (event) => {
+        console.log('Gamepad connected:', event.gamepad);
+    });
+
+    window.addEventListener('gamepaddisconnected', (event) => {
+        console.log('Gamepad disconnected:', event.gamepad);
+    });
+
     const playerSplash = new Howl({
         src: ['sounds/splash.mp3'],
         volume: 1.0
@@ -146,6 +158,71 @@ function sharkAttack(imageLoader) {
     app.stage.addChild(panels.getGetReadyContainer())
     performanceTestReady();
 
+    function triggerKeyDownEvent(keyCode, key) {
+        const event = new KeyboardEvent('keydown', { code: keyCode, key: key });
+        window.dispatchEvent(event);
+    }
+
+    function triggerKeyUpEvent(keyCode, key) {
+        const event = new KeyboardEvent('keyup', { code: keyCode, key: key });
+        window.dispatchEvent(event);
+    }
+
+    let prevXAxisState = 'center';
+    let prevYAxisState = 'center';
+
+    // Define a threshold to detect stick movement
+    const threshold = 0.5;
+
+    function pollGamepad() {
+        const gamepads = navigator.getGamepads();
+
+        for (const gamepad of gamepads) {
+            if (gamepad) {
+                // Handle stick axes (assuming axes 0 and 1)
+                const xAxis = gamepad.axes[0];
+                const yAxis = gamepad.axes[1];
+
+                if (xAxis < -threshold) {
+                    triggerKeyDownEvent('ArrowLeft', 'ArrowLeft');
+                    prevXAxisState = 'left';
+                } else if (xAxis > threshold) {
+                    triggerKeyDownEvent('ArrowRight', 'ArrowRight');
+                    prevXAxisState = 'right';
+                } else {
+                    if (prevXAxisState === 'left') {
+                        triggerKeyUpEvent('ArrowLeft', 'ArrowLeft');
+                    } else if (prevXAxisState === 'right') {
+                        triggerKeyUpEvent('ArrowRight', 'ArrowRight');
+                    }
+                    prevXAxisState = 'center';
+                }
+
+                if (yAxis < -threshold) {
+                    triggerKeyDownEvent('KeyA', 'a');
+                    prevYAxisState = 'up';
+                } else if (yAxis > threshold) {
+                    triggerKeyDownEvent('KeyZ', 'z');
+                    prevYAxisState = 'down';
+                } else {
+                    if (prevYAxisState === 'up') {
+                        triggerKeyUpEvent('KeyA', 'a');
+                    } else if (prevYAxisState === 'down') {
+                        triggerKeyUpEvent('KeyZ', 'z');
+                    }
+                    prevYAxisState = 'center';
+                }
+
+                // Handle buttons (example: trigger 'Enter' when the first button is pressed)
+                if (gamepad.buttons[0].pressed) {
+                    triggerKeyDownEvent('Enter', 'Enter');
+                }
+
+                // Handle other buttons similarly
+            }
+        }
+    }
+
     const speedConstant = 121;
     app.ticker.add((delta) => {
         if (initializePerformance) {
@@ -153,6 +230,8 @@ function sharkAttack(imageLoader) {
             times--;
             if (times <= 0) initializePerformance = false;
         }
+
+        pollGamepad();
 
         if (isPaused) {
             return;
