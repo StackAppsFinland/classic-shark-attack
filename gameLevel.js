@@ -1,10 +1,5 @@
 class GameLevel {
-    constructor(id = 1,
-                sharks=1,
-                octopuses = 0,
-                speed = 1,
-                coverage=25,
-                eatNetAfter = 3000) {
+    constructor(id, sharks, octopuses, speed, coverage, eatNetAfter) {
         this.id = id;
         this.sharks = sharks;
         this.octopuses = octopuses;
@@ -13,5 +8,3 @@ class GameLevel {
         this.eatNetAfter = eatNetAfter;
     }
 }
-
-export default GameLevel;

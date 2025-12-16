@@ -1,6 +1,3 @@
-import NetEatingEffect from "./netEatingEffect.js";
-import SharkEatOctopus from "./sharkEatOctopus.js";
-
 class Shark {
     constructor(netGrid, netEatingContainer, octopusContainer, imageLoader, playerSprite, gridCountX, gridCountY, speed, chompSound, octoChompSound, eatDelay) {
         this.netGrid = netGrid;
@@ -283,5 +280,3 @@ class Shark {
         }
     }
 }
-
-export default Shark;

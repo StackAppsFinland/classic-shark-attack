@@ -49,7 +49,4 @@ class BonusMessage extends PIXI.Container {
             },
         });
     }
-
 }
-
-export default BonusMessage;

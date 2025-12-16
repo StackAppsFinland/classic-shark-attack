@@ -1,5 +1,3 @@
-import { destroyChildren } from './utils.js';
-
 class SharkEatOctopus {
     constructor(x, y, duration, numParticles, speedMultiplier) {
         this.x = x;
@@ -54,5 +52,3 @@ class SharkEatOctopus {
         }
     }
 }
-
-export default SharkEatOctopus;

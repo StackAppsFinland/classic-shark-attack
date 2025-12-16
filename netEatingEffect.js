@@ -1,5 +1,3 @@
-import { destroyChildren } from './utils.js';
-
 class NetEatingEffect {
     constructor(x, y, duration, numParticles, speedMultiplier) {
         this.x = x;
@@ -54,5 +52,3 @@ class NetEatingEffect {
         }
     }
 }
-
-export default NetEatingEffect;

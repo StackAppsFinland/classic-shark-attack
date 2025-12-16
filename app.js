@@ -1,27 +1,20 @@
-import ImageLoader from './imageLoader.js';
-import Panels from './panels.js';
-import Score from './score.js';
-import levels from './levels.js';
-import Shark from "./shark.js";
-import WaterSplashEffect from "./waterSplashEffect.js";
-import ProgressBar from "./progressBar.js";
-import Octopus from "./octopus.js";
-import BrightnessFlash from "./brightnessFlash.js";
-
-WebFont.load({
-    custom: {
-        families: ['space-font'],
-        urls: ['SHPinscher-Regular.otf']
-    },
-    active: function () {
-        console.log("All sound files loaded")
-        const onImagesLoaded = () => {
-            console.log('All images have been loaded.');
-            sharkAttack(imageLoader);
-        };
-        const imageLoader = new ImageLoader(onImagesLoaded);
-    }
-});
+function startGame() {
+    console.log('Starting game initialization...');
+    WebFont.load({
+        custom: {
+            families: ['space-font'],
+            urls: ['index.html']
+        },
+        active: function () {
+            console.log("Font loaded successfully")
+            const onImagesLoaded = () => {
+                console.log('All images have been loaded.');
+                sharkAttack(imageLoader);
+            };
+            const imageLoader = new ImageLoader(onImagesLoaded);
+        }
+    });
+}
 
 function sharkAttack(imageLoader) {
     if (!('getGamepads' in navigator)) {
@@ -115,11 +108,16 @@ function sharkAttack(imageLoader) {
     let backtrackingMoves = 0;
     let totalNumberOfMoves = 0;
     let isMoving = false;
+    console.log('Creating PIXI Application...');
     const app = new PIXI.Application({
         width: gridCountX * gridSize,
         height: (gridCountY + 1) * gridSize,
         backgroundAlpha: 0
     });
+    console.log('PIXI Application created:', app);
+    console.log('Available properties:', Object.keys(app));
+    console.log('app.view:', app.view);
+    console.log('app.canvas:', app.canvas);
 
     gsap.registerPlugin(PixiPlugin);
     currentScore.loadGameData();
@@ -127,10 +125,12 @@ function sharkAttack(imageLoader) {
     handleInput()
     drawScoreText();
     const scoreDisplay = drawScores();
+    
+    console.log('Adding PIXI application to document body...');
     // Add the application view to the HTML body
     document.body.appendChild(app.view);
+    console.log('PIXI application view added to body');
 
-    // Create containers
     const netContainer = new PIXI.Container();
     const netEatenContainer = new PIXI.Container();
     const playerContainer = new PIXI.Container();

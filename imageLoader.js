@@ -73,5 +73,3 @@ class ImageLoader {
     Promise.all(loadPromises).then(callback);
   }
 }
-
-export default ImageLoader;

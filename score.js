@@ -44,5 +44,3 @@ class Score {
         this.testMode = !this.testMode;
     }
 }
-
-export default Score;

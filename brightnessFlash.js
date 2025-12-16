@@ -36,5 +36,3 @@ class BrightnessFlash {
             });
     }
 }
-
-export default BrightnessFlash;

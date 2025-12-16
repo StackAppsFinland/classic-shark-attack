@@ -86,5 +86,3 @@ class Octopus {
         this.octopusSprite.texture = this.imageLoader.getImage(`frame_${this.frameCounter}`);
     }
 }
-
-export default Octopus;

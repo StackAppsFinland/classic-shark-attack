@@ -467,5 +467,3 @@ class Panels {
         this.getReadyContainer.alpha = 0;
     }
 }
-
-export default Panels

@@ -3,5 +3,3 @@ const Const = {
     gridCountY: 22,
     gridSize: 28
 };
-
-export default Const;

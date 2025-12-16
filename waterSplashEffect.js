@@ -1,5 +1,3 @@
-import { destroyChildren } from './utils.js';
-
 class WaterSplashEffect {
     constructor(x, y, duration, numParticles, speedMultiplier) {
         this.x = x;
@@ -70,5 +68,3 @@ class WaterSplashEffect {
         }
     }
 }
-
-export default WaterSplashEffect;

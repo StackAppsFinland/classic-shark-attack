@@ -40,5 +40,3 @@ class ProgressBar {
         this.innerRectangle.endFill();
     }
 }
-
-export default ProgressBar;
