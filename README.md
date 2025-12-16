@@ -105,3 +105,4 @@ Navigate your player through the ocean while avoiding sharks and octopuses. Draw
 ## Credits
 
 Original game concept inspired by classic arcade games. This modern implementation features enhanced graphics, sound, and gameplay while maintaining the classic feel.
+
