@@ -8,3 +8,5 @@ class GameLevel {
         this.eatNetAfter = eatNetAfter;
     }
 }
+
+globalThis.GameLevel = GameLevel;

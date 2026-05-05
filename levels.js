@@ -11,3 +11,5 @@ const levels = [
     new GameLevel(10, 6, 9, 1.4, 80, 750),
     new GameLevel(11, 6, 10, 1.5, 80, 600)
 ];
+
+globalThis.levels = levels;

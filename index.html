@@ -15,41 +15,50 @@
         function loadGameScripts() {
             if (typeof PIXI !== 'undefined') {
                 const scripts = [
-                    'constants.js?v=2',
-                    'utils.js?v=2',
-                    'gameLevel.js?v=2',
-                    'levels.js?v=2',
-                    'score.js?v=2',
-                    'imageLoader.js?v=2',
-                    'brightnessFlash.js?v=2',
-                    'waterSplashEffect.js?v=2',
-                    'netEatingEffect.js?v=2',
-                    'progressBar.js?v=2',
-                    'octopus.js?v=2',
-                    'sharkEatOctopus.js?v=2',
-                    'shark.js?v=2',
-                    'panels.js?v=2',
-                    'bonusMessage.js?v=2',
-                    'app.js?v=2'
+                    'constants.js?v=3',
+                    'utils.js?v=3',
+                    'gameLevel.js?v=3',
+                    'levels.js?v=3',
+                    'score.js?v=3',
+                    'imageLoader.js?v=3',
+                    'brightnessFlash.js?v=3',
+                    'waterSplashEffect.js?v=3',
+                    'netEatingEffect.js?v=3',
+                    'progressBar.js?v=3',
+                    'octopus.js?v=3',
+                    'sharkEatOctopus.js?v=3',
+                    'shark.js?v=3',
+                    'panels.js?v=3',
+                    'bonusMessage.js?v=3',
+                    'app.js?v=3'
                 ];
                 
                 let loadedCount = 0;
-                scripts.forEach((src, index) => {
+                function loadNextScript(index) {
+                    if (index === scripts.length) {
+                        console.log('All game scripts loaded - starting game initialization');
+                        if (typeof startGame === 'function') {
+                            startGame();
+                        }
+                        return;
+                    }
+
+                    const src = scripts[index];
                     const script = document.createElement('script');
+                    script.async = false;
                     script.src = src;
                     script.onload = () => {
                         loadedCount++;
                         console.log(`Loaded ${src} (${loadedCount}/${scripts.length})`);
-                        if (loadedCount === scripts.length) {
-                            console.log('All game scripts loaded - starting game initialization');
-                            // Start the game after all scripts are loaded
-                            if (typeof startGame === 'function') {
-                                startGame();
-                            }
-                        }
+                        loadNextScript(index + 1);
+                    };
+                    script.onerror = () => {
+                        console.error(`Failed to load ${src}`);
                     };
                     document.head.appendChild(script);
-                });
+                }
+
+                loadNextScript(0);
             } else {
                 setTimeout(loadGameScripts, 100);
             }
