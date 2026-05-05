@@ -3,7 +3,6 @@ function startGame() {
     WebFont.load({
         custom: {
             families: ['space-font'],
-            urls: ['index.html']
         },
         active: function () {
             console.log("Font loaded successfully")
@@ -58,7 +57,7 @@ function sharkAttack(imageLoader) {
 
     const tracks = ['sounds/track1.mp3', 'sounds/track2.mp3', 'sounds/track3.mp3', 'sounds/track4.mp3'];
 
-// Initialize a counter to keep track of the current track
+    // Initialize a counter to keep track of the current track
     let currentTrack = 0;
 
     // Create a new Howl instance for each track
@@ -117,7 +116,6 @@ function sharkAttack(imageLoader) {
     console.log('PIXI Application created:', app);
     console.log('Available properties:', Object.keys(app));
     console.log('app.view:', app.view);
-    console.log('app.canvas:', app.canvas);
 
     gsap.registerPlugin(PixiPlugin);
     currentScore.loadGameData();
@@ -635,6 +633,8 @@ function sharkAttack(imageLoader) {
                     if (event.code === 'KeyN') {
                         currentScore.reset();
                         currentScore.level = 1;
+                        currentScore.saveGameData();
+                        gameMode = GAME_RUNNING;
 
                         panels.hideOpeningContainer(() => {
                             resetGame();
